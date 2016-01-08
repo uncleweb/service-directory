@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from django.db import models
+from django.contrib.gis.db import models
 
 
 class Country(models.Model):
@@ -42,7 +42,8 @@ class Organisation(models.Model):
     country = models.ForeignKey(Country)
     areas = models.ManyToManyField(CountryArea)
 
-    # TODO: lat/lon, consider GeoDjango
+    # consider also having lat/lon fields and allowing the user to enter coordinates as an alternative
+    location = models.PointField(blank=True, null=True)
 
     def __unicode__(self):
         return self.name
@@ -69,7 +70,8 @@ class Service(models.Model):
     age_range_min = models.PositiveSmallIntegerField(blank=True, null=True)
     age_range_max = models.PositiveSmallIntegerField(blank=True, null=True)
 
-    availability_hours = models.CharField(max_length=50, blank=True)  # might want separate min & max fields / DateTimeField or DurationField
+    # might want separate min & max fields / DateTimeField or DurationField
+    availability_hours = models.CharField(max_length=50, blank=True)
 
     def __unicode__(self):
         category_names = [cat.__unicode__() for cat in self.categories.all()]
