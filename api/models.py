@@ -7,6 +7,9 @@ class Country(models.Model):
     name = models.CharField(max_length=100)
     iso_code = models.CharField(max_length=3)
 
+    class Meta:
+        verbose_name_plural = 'countries'
+
 
 class CountryArea(models.Model):
     AREA_LEVELS = [
@@ -38,6 +41,9 @@ class Organisation(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=50)
+
+    class Meta:
+        verbose_name_plural = 'categories'
 
 
 class Service(models.Model):
