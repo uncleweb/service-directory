@@ -1,4 +1,4 @@
-from api.models import Country, CountryArea, Organisation, Category, Service
+from models import Country, CountryArea, Organisation, Category, Service
 from django.contrib import admin
 
 # Register your models here.
