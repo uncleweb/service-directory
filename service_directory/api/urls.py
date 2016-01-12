@@ -7,5 +7,5 @@ router = routers.DefaultRouter()
 urlpatterns = [
     url(r'^', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^service_lookup/$', views.ServiceLookup.as_view())
+    url(r'^service_lookup/$', views.ServiceLookupView.as_view())
 ]
