@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'rest_framework',
+    'rest_framework_swagger',
     'service_directory.api'
 ]
 
@@ -134,4 +135,10 @@ STATIC_URL = '/static/'
 # REST framework
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAdminUser',)
+}
+
+
+# Django REST Swagger
+SWAGGER_SETTINGS = {
+    'is_superuser': True
 }
