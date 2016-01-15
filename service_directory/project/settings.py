@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'rest_framework',
     'rest_framework_swagger',
+    'haystack',
     'service_directory.api'
 ]
 
@@ -141,4 +142,13 @@ REST_FRAMEWORK = {
 # Django REST Swagger
 SWAGGER_SETTINGS = {
     'is_superuser': True
+}
+
+# Haystack search
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'URL': 'http://127.0.0.1:9200',
+        'INDEX_NAME': 'haystack',
+    },
 }
