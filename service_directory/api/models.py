@@ -31,6 +31,8 @@ class CountryArea(models.Model):
 
 
 class Organisation(models.Model):
+    objects = models.GeoManager()
+
     name = models.CharField(max_length=100)
     about = models.CharField(max_length=500, blank=True)
 
@@ -60,6 +62,8 @@ class Category(models.Model):
 
 
 class Service(models.Model):
+    objects = models.GeoManager()
+
     categories = models.ManyToManyField(Category)
     keywords = models.CharField(max_length=500)
 
