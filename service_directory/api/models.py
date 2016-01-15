@@ -27,10 +27,14 @@ class CountryArea(models.Model):
     country = models.ForeignKey(Country)
 
     def __unicode__(self):
-        return '{0} ({1} in {2})'.format(self.name, self.get_level_display(), self.country)
+        return '{0} ({1} in {2})'.format(
+            self.name, self.get_level_display(), self.country
+        )
 
 
 class Organisation(models.Model):
+    objects = models.GeoManager()
+
     name = models.CharField(max_length=100)
     about = models.CharField(max_length=500, blank=True)
 
@@ -42,7 +46,6 @@ class Organisation(models.Model):
     country = models.ForeignKey(Country)
     areas = models.ManyToManyField(CountryArea)
 
-    # consider also having lat/lon fields and allowing the user to enter coordinates as an alternative
     location = models.PointField(blank=True, null=True)
 
     def __unicode__(self):
@@ -60,6 +63,8 @@ class Category(models.Model):
 
 
 class Service(models.Model):
+    objects = models.GeoManager()
+
     categories = models.ManyToManyField(Category)
     keywords = models.CharField(max_length=500)
 
@@ -75,4 +80,6 @@ class Service(models.Model):
 
     def __unicode__(self):
         category_names = [cat.__unicode__() for cat in self.categories.all()]
-        return 'Categories: {0} - Keywords: {1} - Organisation: {2}'.format(','.join(category_names), self.keywords, self.organisation)
+        return 'Categories: {0} - Keywords: {1} - Organisation: {2}'.format(
+            ','.join(category_names), self.keywords, self.organisation
+        )
