@@ -1,4 +1,3 @@
-from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import Point
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -43,7 +42,7 @@ class ServiceLookupView(APIView):
 
         if point:
             # TODO: investigate adding distance to serialized output
-            services = services.annotate(distance=Distance('organisation__location', point)).order_by('distance')
+            services = services.distance(point, field_name='organisation__location').order_by('distance')
 
         # limit to 20 results
         services = services[:20]
