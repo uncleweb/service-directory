@@ -8,9 +8,13 @@ class OrganisationModelForm(forms.ModelForm):
         model = Organisation
         fields = '__all__'
 
-    location_coords = forms.CharField(required=False, help_text='Enter coordinates as latitude,longitude.'
-                                                                ' Note that entering coordinates here overrides any'
-                                                                ' location set via the map.')
+    location_coords = forms.CharField(
+        required=False,
+        label='Location coordinates',
+        help_text='Enter coordinates as latitude,longitude. '
+        'Note that entering coordinates here overrides any location set via'
+        ' the map.'
+    )
 
     def save(self, commit=True):
         location_coords = self.cleaned_data.get('location_coords', None)
