@@ -1,7 +1,7 @@
 service-directory
 =============================
 
-.. image:: https://travis-ci.org/praekelt/service-directory.svg?branch=master
+.. image:: https://travis-ci.org/praekelt/service-directory.svg?branch=develop
         :target: https://travis-ci.org/praekelt/service-directory
 
 .. image:: https://img.shields.io/pypi/v/Service Directory.svg
@@ -11,6 +11,6 @@ service-directory
     :target: https://coveralls.io/github/praekelt/service-directory?branch=develop
     :alt: Code Coverage
 
-.. image:: https://readthedocs.org/projects/Service Directory/badge/?version=latest
-    :target: https://Service Directory.readthedocs.org
+.. image:: https://readthedocs.org/projects/service-directory/badge/?version=latest
+    :target: https://service-directory.readthedocs.org/en/latest/
     :alt: Service Directory Docs
