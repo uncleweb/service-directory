@@ -44,8 +44,8 @@ class ServiceLookupView(APIView):
             # TODO: investigate adding distance to serialized output
             sqs = sqs.distance('location', point).order_by('-distance')
 
-        # limit to 20 results
-        sqs = sqs[:20]
+        # fetch all result objects and limit to 20 results
+        sqs = sqs.load_all()[:20]
 
         services = [result.object for result in sqs]
 
