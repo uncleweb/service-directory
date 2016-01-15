@@ -38,7 +38,7 @@ class ServiceLookupView(APIView):
         sqs = SearchQuerySet()
 
         if keyword:
-            sqs = sqs.filter(keywords=keyword)
+            sqs = sqs.filter(content=keyword)
 
         if point:
             # TODO: investigate adding distance to serialized output
