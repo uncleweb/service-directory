@@ -6,3 +6,8 @@ from settings import *
 # CREATEDB permission is also required
 DATABASES['default']['USER'] = 'postgres'
 DATABASES['default']['PASSWORD'] = 'password'
+
+HAYSTACK_CONNECTIONS['default']['INDEX_NAME'] = 'test'
+
+# turn off authentication on the api for testing
+REST_FRAMEWORK['DEFAULT_PERMISSION_CLASSES'] = ('rest_framework.permissions.AllowAny',)
