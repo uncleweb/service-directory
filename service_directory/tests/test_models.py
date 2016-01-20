@@ -148,7 +148,7 @@ class ServiceTestCase(TestCase):
         self.organisation = Organisation.objects.create(
             name='Test Org',
             country=self.country,
-            location=Point(-33.891937, 18.505496)
+            location=Point(18.505496, -33.891937, srid=4326)
         )
 
         service = Service.objects.create(
