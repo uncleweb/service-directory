@@ -9,11 +9,20 @@ cache:
 env:
   - TZ=UTC
 
+services:
+  - elasticsearch
+
+before_install:
+  - curl -O https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.7.4.deb && sudo dpkg -i --force-confnew elasticsearch-1.7.4.deb
+
 install:
   - pip install coveralls
   - pip install wheel
   - pip install -r requirements-dev.txt
   - pip install -e .
+
+before_script:
+  - sleep 10
 
 script:
   - flake8
