@@ -1,7 +1,9 @@
 from django.contrib.gis.geos import Point
 from haystack.query import SearchQuerySet
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from service_directory.api.models import Service
 
 from service_directory.api.serializers import ServiceSerializer
 
@@ -52,3 +54,8 @@ class ServiceLookupView(APIView):
         serializer = ServiceSerializer(services, many=True)
 
         return Response(serializer.data)
+
+
+class ServiceDetail(RetrieveAPIView):
+    queryset = Service.objects.all()
+    serializer_class = ServiceSerializer
