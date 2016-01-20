@@ -1,2 +1,2 @@
 [run]
-omit = ve/*
+omit = ve/*, service_directory/manage.py, service_directory/project/*, service_directory/api/migrations/*
