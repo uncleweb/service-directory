@@ -9,6 +9,8 @@ cache:
 env:
   - TZ=UTC
 
+sudo: required
+
 services:
   - elasticsearch
 
