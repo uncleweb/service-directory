@@ -1,6 +1,8 @@
 service-directory
 =============================
 
+A service directory of information.
+
 .. image:: https://travis-ci.org/praekelt/service-directory.svg?branch=develop
         :target: https://travis-ci.org/praekelt/service-directory
 
