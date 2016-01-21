@@ -5,7 +5,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from service_directory.api.models import Service
 
-from service_directory.api.serializers import ServiceSerializer
+from service_directory.api.serializers import ServiceSerializer, \
+    ServiceSummarySerializer
 
 
 class ServiceLookupView(APIView):
@@ -21,7 +22,7 @@ class ServiceLookupView(APIView):
               description: latitude,longitude
               type: string
               paramType: query
-        response_serializer: ServiceSerializer
+        response_serializer: ServiceSummarySerializer
     """
     def get(self, request):
         point = None
@@ -43,15 +44,25 @@ class ServiceLookupView(APIView):
             sqs = sqs.filter(content=keyword)
 
         if point:
-            # TODO: investigate adding distance to serialized output
             sqs = sqs.distance('location', point).order_by('distance')
 
         # fetch all result objects and limit to 20 results
         sqs = sqs.load_all()[:20]
 
-        services = [result.object for result in sqs]
+        service_distance_tuples = [
+            (
+                result.object, result.distance if hasattr(result, 'distance')
+                else None
+            )
+            for result in sqs
+        ]
 
-        serializer = ServiceSerializer(services, many=True)
+        for service, distance in service_distance_tuples:
+            service.distance = '{0:.2f}km'.format(distance.km)
+
+        services = zip(*service_distance_tuples)[0]
+
+        serializer = ServiceSummarySerializer(services, many=True)
 
         return Response(serializer.data)
 
