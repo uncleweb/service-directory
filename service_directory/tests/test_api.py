@@ -9,6 +9,8 @@ from service_directory.api.search_indexes import ServiceIndex
 
 
 class ServiceLookupTestCase(TestCase):
+    client_class = APIClient
+
     @classmethod
     def setUpTestData(cls):
         # clear the haystack index which may have been left in a bad state by
@@ -67,36 +69,33 @@ class ServiceLookupTestCase(TestCase):
         test_service_3.categories.add(cls.category)
 
     def test_get_without_parameters(self):
-        client = APIClient()
-        response = client.get('/api/service_lookup/', format='json')
+        response = self.client.get('/api/service_lookup/', format='json')
 
         self.assertEqual(3, len(response.data))
 
     def test_get_with_keyword_parameter(self):
-        client = APIClient()
-
-        response = client.get(
+        response = self.client.get(
             '/api/service_lookup/',
             {'keyword': 'test'},
             format='json'
         )
         self.assertEqual(3, len(response.data))
 
-        response = client.get(
+        response = self.client.get(
             '/api/service_lookup/',
             {'keyword': 'heart'},
             format='json'
         )
         self.assertEqual(1, len(response.data))
 
-        response = client.get(
+        response = self.client.get(
             '/api/service_lookup/',
             {'keyword': 'hiv'},
             format='json'
         )
         self.assertEqual(1, len(response.data))
 
-        response = client.get(
+        response = self.client.get(
             '/api/service_lookup/',
             {'keyword': 'accident'},
             format='json'
@@ -104,10 +103,8 @@ class ServiceLookupTestCase(TestCase):
         self.assertEqual(1, len(response.data))
 
     def test_get_with_near_parameter(self):
-        client = APIClient()
-
         # -33.921387, 18.424101 - Adderley Street outside Cape Town station
-        response = client.get(
+        response = self.client.get(
             '/api/service_lookup/',
             {'near': '-33.921387,18.424101'},
             format='json'
@@ -132,10 +129,8 @@ class ServiceLookupTestCase(TestCase):
                          response.data[2]['organisation']['name'])
 
     def test_get_with_keyword_and_near_parameters(self):
-        client = APIClient()
-
         # -33.921387, 18.424101 - Adderley Street outside Cape Town station
-        response = client.get(
+        response = self.client.get(
             '/api/service_lookup/',
             {
                 'keyword': 'trauma',
