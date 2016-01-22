@@ -5,6 +5,7 @@ from haystack.backends.elasticsearch_backend import ElasticsearchSearchBackend
 from rest_framework.test import APIClient
 from service_directory.api.models import Country, Category, Organisation, \
     Service
+from service_directory.api.search_indexes import ServiceIndex
 
 
 class ServiceLookupTestCase(TestCase):
@@ -17,6 +18,9 @@ class ServiceLookupTestCase(TestCase):
             INDEX_NAME=settings.HAYSTACK_CONNECTIONS['default']['INDEX_NAME']
         )
         search_backend.clear()
+
+        # this sets up the required mappings for us
+        search_backend.update(ServiceIndex(), [])
 
         self.country = Country.objects.create(
             name='South Africa',
@@ -117,10 +121,10 @@ class ServiceLookupTestCase(TestCase):
         self.assertEqual('Netcare Christiaan Barnard Memorial Hospital',
                          response.data[0]['organisation']['name'])
 
-        self.assertEqual('test hiv aids', response.data[0]['keywords'])
+        self.assertEqual('test hiv aids', response.data[1]['keywords'])
         self.assertEqual('Kingsbury Hospital Claremont',
-                         response.data[0]['organisation']['name'])
+                         response.data[1]['organisation']['name'])
 
-        self.assertEqual('test trauma accident', response.data[0]['keywords'])
+        self.assertEqual('test trauma accident', response.data[2]['keywords'])
         self.assertEqual('Constantiaberg Medi Clinic',
-                         response.data[0]['organisation']['name'])
+                         response.data[2]['organisation']['name'])
