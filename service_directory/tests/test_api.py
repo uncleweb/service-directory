@@ -9,7 +9,8 @@ from service_directory.api.search_indexes import ServiceIndex
 
 
 class ServiceLookupTestCase(TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpTestData(cls):
         # clear the haystack index which may have been left in a bad state by
         # other tests
         search_backend = ElasticsearchSearchBackend(
@@ -22,48 +23,48 @@ class ServiceLookupTestCase(TestCase):
         # this sets up the required mappings for us
         search_backend.update(ServiceIndex(), [])
 
-        self.country = Country.objects.create(
+        cls.country = Country.objects.create(
             name='South Africa',
             iso_code='ZA'
         )
 
-        self.category = Category.objects.create(name='Test Category')
+        cls.category = Category.objects.create(name='Test Category')
 
-        self.org_cbmh = Organisation.objects.create(
+        cls.org_cbmh = Organisation.objects.create(
             name='Netcare Christiaan Barnard Memorial Hospital',
-            country=self.country,
+            country=cls.country,
             location=Point(18.418231, -33.921859, srid=4326)
         )
 
-        self.org_khc = Organisation.objects.create(
+        cls.org_khc = Organisation.objects.create(
             name='Kingsbury Hospital Claremont',
-            country=self.country,
+            country=cls.country,
             location=Point(18.469060, -33.986375, srid=4326)
         )
 
-        self.org_cmc = Organisation.objects.create(
+        cls.org_cmc = Organisation.objects.create(
             name='Constantiaberg Medi Clinic',
-            country=self.country,
+            country=cls.country,
             location=Point(18.461260, -34.026629, srid=4326)
         )
 
         test_service_1 = Service.objects.create(
             keywords='test heart transplant trauma',
-            organisation=self.org_cbmh
+            organisation=cls.org_cbmh
         )
-        test_service_1.categories.add(self.category)
+        test_service_1.categories.add(cls.category)
 
         test_service_2 = Service.objects.create(
             keywords='test hiv aids',
-            organisation=self.org_khc
+            organisation=cls.org_khc
         )
-        test_service_2.categories.add(self.category)
+        test_service_2.categories.add(cls.category)
 
         test_service_3 = Service.objects.create(
             keywords='test trauma accident',
-            organisation=self.org_cmc
+            organisation=cls.org_cmc
         )
-        test_service_3.categories.add(self.category)
+        test_service_3.categories.add(cls.category)
 
     def test_get_without_parameters(self):
         client = APIClient()
