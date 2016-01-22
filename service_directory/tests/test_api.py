@@ -48,7 +48,7 @@ class ServiceLookupTestCase(TestCase):
         )
 
         test_service_1 = Service.objects.create(
-            keywords='test heart transplant',
+            keywords='test heart transplant trauma',
             organisation=self.org_cbmh
         )
         test_service_1.categories.add(self.category)
@@ -117,7 +117,8 @@ class ServiceLookupTestCase(TestCase):
         # Kingsbury Hospital Claremont and then Constantiaberg Medi Clinic
         self.assertEqual(3, len(response.data))
 
-        self.assertEqual('test heart transplant', response.data[0]['keywords'])
+        self.assertEqual('test heart transplant trauma',
+                         response.data[0]['keywords'])
         self.assertEqual('Netcare Christiaan Barnard Memorial Hospital',
                          response.data[0]['organisation']['name'])
 
@@ -128,3 +129,29 @@ class ServiceLookupTestCase(TestCase):
         self.assertEqual('test trauma accident', response.data[2]['keywords'])
         self.assertEqual('Constantiaberg Medi Clinic',
                          response.data[2]['organisation']['name'])
+
+    def test_get_with_keyword_and_near_parameters(self):
+        client = APIClient()
+
+        # -33.921387, 18.424101 - Adderley Street outside Cape Town station
+        response = client.get(
+            '/api/service_lookup/',
+            {
+                'keyword': 'trauma',
+                'near': '-33.921387,18.424101'
+            },
+            format='json'
+        )
+
+        # we should get 2 services, ordered from closest to farthest
+        # Christiaan Barnard Memorial Hospital is closest
+        self.assertEqual(2, len(response.data))
+
+        self.assertEqual('test heart transplant trauma',
+                         response.data[0]['keywords'])
+        self.assertEqual('Netcare Christiaan Barnard Memorial Hospital',
+                         response.data[0]['organisation']['name'])
+
+        self.assertEqual('test trauma accident', response.data[1]['keywords'])
+        self.assertEqual('Constantiaberg Medi Clinic',
+                         response.data[1]['organisation']['name'])
