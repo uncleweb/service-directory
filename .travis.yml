@@ -42,5 +42,5 @@ deploy:
     all_branches: true
 
 notifications:
-  slack: praekelt:VMrETgjMuKaZW2OPrKiKINRu
+  slack: praekeltfoundation:mgvd7PsJynKvMoximpSmuusw
   
