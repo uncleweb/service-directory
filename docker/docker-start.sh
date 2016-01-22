@@ -1,5 +1,6 @@
 #!/bin/bash
 
+cd service_directory
 set -e
 
 ./manage.py migrate
