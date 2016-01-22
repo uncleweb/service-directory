@@ -58,7 +58,8 @@ class ServiceLookupView(APIView):
         ]
 
         for service, distance in service_distance_tuples:
-            service.distance = '{0:.2f}km'.format(distance.km)
+            if distance is not None:
+                service.distance = '{0:.2f}km'.format(distance.km)
 
         services = zip(*service_distance_tuples)[0]
 
