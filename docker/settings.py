@@ -23,7 +23,8 @@ DATABASES = {
 
 HAYSTACK_CONNECTIONS = {
     'default': {
-        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'ENGINE': 'haystack.backends.elasticsearch_backend.'\
+            'ElasticsearchSearchEngine',
         'URL': 'http://%s:9200' % environ.get('ES_HOST', '127.0.0.1'),
         'INDEX_NAME': 'haystack',
     },
