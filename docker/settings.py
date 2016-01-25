@@ -10,6 +10,8 @@ from .settings import *
 DEBUG = False
 TEMPLATE_DEBUG = False
 
+ALLOWED_HOSTS = ['*']
+
 SECRET_KEY = environ.get('SECRET_KEY', 'please-change-me')
 
 RAVEN_DSN = environ.get('RAVEN_DSN')
