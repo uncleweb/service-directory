@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
-from rest_framework import serializers
 from models import Service, Organisation
+from rest_framework import serializers
 
 
 class ServiceSerializer(serializers.ModelSerializer):
@@ -32,7 +32,7 @@ class ServiceSummarySerializer(serializers.ModelSerializer):
         d = OrderedDict()
 
         d['id'] = instance.id
-        d['keywords'] = instance.keywords
+        d['keywords'] = [keyword.name for keyword in instance.keywords.all()]
         d['organisation'] = OrganisationSummarySerializer(
             instance.organisation
         ).data
