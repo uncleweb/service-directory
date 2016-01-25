@@ -1,7 +1,7 @@
 from django.contrib.gis.geos import Point
 from django.test import TestCase
 from service_directory.api.models import Country, CountryArea, Organisation, \
-    Category, Service
+    Category, Service, Keyword
 
 
 class CountryTestCase(TestCase):
@@ -136,6 +136,31 @@ class CategoryTestCase(TestCase):
         self.assertEqual('Changed Category', categories[0].name)
 
 
+class KeywordTestCase(TestCase):
+    def setUp(self):
+        self.category = Category.objects.create(name='Test Category')
+
+        keyword = Keyword.objects.create(name='test')
+
+        keyword.categories.add(self.category)
+
+    def test_query(self):
+        keywords = Keyword.objects.filter(name='test')
+
+        self.assertEqual(1, len(keywords))
+        self.assertTrue('Test Category' in keywords[0].formatted_categories())
+        self.assertEqual('test', keywords[0].__unicode__())
+
+    def test_update(self):
+        keyword = Keyword.objects.filter(name='test').get()
+
+        keyword.name = 'test changed'
+        keyword.save()
+
+        keyword.refresh_from_db()
+        self.assertEqual('test changed', keyword.name)
+
+
 class ServiceTestCase(TestCase):
     def setUp(self):
         self.country = Country.objects.create(
@@ -145,6 +170,9 @@ class ServiceTestCase(TestCase):
 
         self.category = Category.objects.create(name='Test Category')
 
+        self.keyword = Keyword.objects.create(name='test')
+        self.keyword.categories.add(self.category)
+
         self.organisation = Organisation.objects.create(
             name='Test Org',
             country=self.country,
@@ -152,31 +180,24 @@ class ServiceTestCase(TestCase):
         )
 
         service = Service.objects.create(
-            keywords='test',
             organisation=self.organisation
         )
 
         service.categories.add(self.category)
+        service.keywords.add(self.keyword)
 
     def test_query(self):
         services = Service.objects.filter(organisation=self.organisation)
 
         self.assertEqual(1, len(services))
-        self.assertEqual('test', services[0].keywords)
-        self.assertEqual(
-            'Categories: Test Category - Keywords: test - Organisation:'
-            ' Test Org',
-            services[0].__unicode__()
-        )
+        self.assertTrue('Test Category' in services[0].formatted_categories())
+        self.assertTrue('test' in services[0].formatted_keywords())
 
     def test_update(self):
-        services = Service.objects.filter(organisation=self.organisation)
+        service = Service.objects.filter(organisation=self.organisation).get()
 
-        service = services[0]
-        service.keywords = 'changed'
+        service.verified_as = 'Child Friendly'
         service.save()
 
-        services = Service.objects.filter(organisation=self.organisation)
-
-        self.assertEqual(1, len(services))
-        self.assertEqual('changed', services[0].keywords)
+        service.refresh_from_db()
+        self.assertEqual('Child Friendly', service.verified_as)

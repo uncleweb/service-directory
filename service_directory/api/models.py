@@ -62,11 +62,26 @@ class Category(models.Model):
         verbose_name_plural = 'categories'
 
 
+class Keyword(models.Model):
+    name = models.CharField(max_length=50)
+    categories = models.ManyToManyField(Category)
+
+    def __unicode__(self):
+        return self.name
+
+    def formatted_categories(self):
+        categories = [
+            category.__unicode__() for category in self.categories.all()
+        ]
+        return ', '.join(categories)
+    formatted_categories.short_description = 'Categories'
+
+
 class Service(models.Model):
     objects = models.GeoManager()
 
     categories = models.ManyToManyField(Category)
-    keywords = models.CharField(max_length=500)
+    keywords = models.ManyToManyField(Keyword)
 
     organisation = models.ForeignKey(Organisation)
 
@@ -78,8 +93,16 @@ class Service(models.Model):
     # might want separate min & max fields / DateTimeField or DurationField
     availability_hours = models.CharField(max_length=50, blank=True)
 
-    def __unicode__(self):
-        category_names = [cat.__unicode__() for cat in self.categories.all()]
-        return 'Categories: {0} - Keywords: {1} - Organisation: {2}'.format(
-            ','.join(category_names), self.keywords, self.organisation
-        )
+    def formatted_categories(self):
+        categories = [
+            category.__unicode__() for category in self.categories.all()
+        ]
+        return ', '.join(categories)
+    formatted_categories.short_description = 'Categories'
+
+    def formatted_keywords(self):
+        keywords = [
+            keyword.__unicode__() for keyword in self.keywords.all()
+        ]
+        return ', '.join(keywords)
+    formatted_keywords.short_description = 'Keywords'
