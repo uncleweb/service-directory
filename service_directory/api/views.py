@@ -41,7 +41,7 @@ class ServiceLookupView(APIView):
         sqs = SearchQuerySet()
 
         if keyword:
-            sqs = sqs.filter(content=keyword)
+            sqs = sqs.filter(text=keyword)
 
         if point:
             sqs = sqs.distance('location', point).order_by('distance')
@@ -61,11 +61,12 @@ class ServiceLookupView(APIView):
             if distance is not None:
                 service.distance = '{0:.2f}km'.format(distance.km)
 
-        services = zip(*service_distance_tuples)[0]
+        if service_distance_tuples:
+            services = zip(*service_distance_tuples)[0]
+            serializer = ServiceSummarySerializer(services, many=True)
+            return Response(serializer.data)
 
-        serializer = ServiceSummarySerializer(services, many=True)
-
-        return Response(serializer.data)
+        return Response([])
 
 
 class ServiceDetail(RetrieveAPIView):
