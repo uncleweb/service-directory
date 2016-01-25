@@ -4,7 +4,7 @@ from django.test import TestCase
 from haystack.backends.elasticsearch_backend import ElasticsearchSearchBackend
 from rest_framework.test import APIClient
 from service_directory.api.models import Country, Category, Organisation, \
-    Service
+    Service, Keyword
 from service_directory.api.search_indexes import ServiceIndex
 
 
@@ -32,6 +32,27 @@ class ServiceLookupTestCase(TestCase):
 
         cls.category = Category.objects.create(name='Test Category')
 
+        cls.keyword_test = Keyword.objects.create(name='test')
+        cls.keyword_test.categories.add(cls.category)
+
+        cls.keyword_heart = Keyword.objects.create(name='heart')
+        cls.keyword_heart.categories.add(cls.category)
+
+        cls.keyword_transplant = Keyword.objects.create(name='transplant')
+        cls.keyword_transplant.categories.add(cls.category)
+
+        cls.keyword_trauma = Keyword.objects.create(name='trauma')
+        cls.keyword_trauma.categories.add(cls.category)
+
+        cls.keyword_hiv = Keyword.objects.create(name='hiv')
+        cls.keyword_hiv.categories.add(cls.category)
+
+        cls.keyword_aids = Keyword.objects.create(name='aids')
+        cls.keyword_aids.categories.add(cls.category)
+
+        cls.keyword_accident = Keyword.objects.create(name='accident')
+        cls.keyword_accident.categories.add(cls.category)
+
         cls.org_cbmh = Organisation.objects.create(
             name='Netcare Christiaan Barnard Memorial Hospital',
             country=cls.country,
@@ -51,22 +72,37 @@ class ServiceLookupTestCase(TestCase):
         )
 
         test_service_1 = Service.objects.create(
-            keywords='test heart transplant trauma',
             organisation=cls.org_cbmh
         )
         test_service_1.categories.add(cls.category)
+        test_service_1.keywords.add(
+            cls.keyword_test, cls.keyword_heart, cls.keyword_transplant,
+            cls.keyword_trauma
+        )
+        # need to explicitly call save because calls to add() with M2M
+        # relationships will not call save() methods and thus the haystack
+        # RealtimeSignalProcessor will not know to update the index
+        # see https://docs.djangoproject.com/en/1.8/ref/models/relations/
+        # #django.db.models.fields.related.RelatedManager.add
+        test_service_1.save()
 
         test_service_2 = Service.objects.create(
-            keywords='test hiv aids',
             organisation=cls.org_khc
         )
         test_service_2.categories.add(cls.category)
+        test_service_2.keywords.add(
+            cls.keyword_test, cls.keyword_hiv, cls.keyword_aids
+        )
+        test_service_2.save()
 
         test_service_3 = Service.objects.create(
-            keywords='test trauma accident',
             organisation=cls.org_cmc
         )
         test_service_3.categories.add(cls.category)
+        test_service_3.keywords.add(
+            cls.keyword_test, cls.keyword_trauma, cls.keyword_accident
+        )
+        test_service_3.save()
 
     def test_get_without_parameters(self):
         response = self.client.get('/api/service_lookup/', format='json')
@@ -90,7 +126,28 @@ class ServiceLookupTestCase(TestCase):
 
         response = self.client.get(
             '/api/service_lookup/',
+            {'keyword': 'transplant'},
+            format='json'
+        )
+        self.assertEqual(1, len(response.data))
+
+        response = self.client.get(
+            '/api/service_lookup/',
+            {'keyword': 'trauma'},
+            format='json'
+        )
+        self.assertEqual(2, len(response.data))
+
+        response = self.client.get(
+            '/api/service_lookup/',
             {'keyword': 'hiv'},
+            format='json'
+        )
+        self.assertEqual(1, len(response.data))
+
+        response = self.client.get(
+            '/api/service_lookup/',
+            {'keyword': 'aids'},
             format='json'
         )
         self.assertEqual(1, len(response.data))
@@ -115,16 +172,18 @@ class ServiceLookupTestCase(TestCase):
         # Kingsbury Hospital Claremont and then Constantiaberg Medi Clinic
         self.assertEqual(3, len(response.data))
 
-        self.assertEqual('test heart transplant trauma',
-                         response.data[0]['keywords'])
+        self.assertListEqual(['test', 'heart', 'transplant', 'trauma'],
+                             response.data[0]['keywords'])
         self.assertEqual('Netcare Christiaan Barnard Memorial Hospital',
                          response.data[0]['organisation']['name'])
 
-        self.assertEqual('test hiv aids', response.data[1]['keywords'])
+        self.assertListEqual(['test', 'hiv', 'aids'],
+                             response.data[1]['keywords'])
         self.assertEqual('Kingsbury Hospital Claremont',
                          response.data[1]['organisation']['name'])
 
-        self.assertEqual('test trauma accident', response.data[2]['keywords'])
+        self.assertListEqual(['test', 'trauma', 'accident'],
+                             response.data[2]['keywords'])
         self.assertEqual('Constantiaberg Medi Clinic',
                          response.data[2]['organisation']['name'])
 
@@ -143,11 +202,12 @@ class ServiceLookupTestCase(TestCase):
         # Christiaan Barnard Memorial Hospital is closest
         self.assertEqual(2, len(response.data))
 
-        self.assertEqual('test heart transplant trauma',
-                         response.data[0]['keywords'])
+        self.assertListEqual(['test', 'heart', 'transplant', 'trauma'],
+                             response.data[0]['keywords'])
         self.assertEqual('Netcare Christiaan Barnard Memorial Hospital',
                          response.data[0]['organisation']['name'])
 
-        self.assertEqual('test trauma accident', response.data[1]['keywords'])
+        self.assertListEqual(['test', 'trauma', 'accident'],
+                             response.data[1]['keywords'])
         self.assertEqual('Constantiaberg Medi Clinic',
                          response.data[1]['organisation']['name'])
