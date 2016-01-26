@@ -11,7 +11,7 @@ from service_directory.api.serializers import ServiceSerializer, \
 
 class ServiceLookupView(APIView):
     """
-    Query services by keyword
+    Query services by keyword and/or location
     ---
     GET:
         parameters:
@@ -70,5 +70,8 @@ class ServiceLookupView(APIView):
 
 
 class ServiceDetail(RetrieveAPIView):
+    """
+    Retrieve service details
+    """
     queryset = Service.objects.all()
     serializer_class = ServiceSerializer
