@@ -1,12 +1,50 @@
 from django.contrib.gis.geos import Point
+from django.db.models.query import Prefetch
 from haystack.query import SearchQuerySet
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from service_directory.api.models import Service
+from service_directory.api.models import Service, Keyword, Category
 
 from service_directory.api.serializers import ServiceSerializer, \
     ServiceSummarySerializer
+
+
+class HomePageCategoryKeywordGrouping(APIView):
+    """
+    Retrieve keywords grouped by category for the home page
+    """
+    def get(self, request):
+        filtered_keyword_queryset = Keyword.objects.filter(
+            show_on_home_page=True
+        )
+
+        home_page_categories = Category.objects.filter(
+            show_on_home_page=True
+        ).prefetch_related(
+            Prefetch(
+                'keyword_set',
+                queryset=filtered_keyword_queryset,
+                to_attr='filtered_keywords'
+            )
+        )[:5]
+
+        category_grouped_keywords = {
+            'categories': []
+        }
+
+        for category in home_page_categories:
+            if not category.filtered_keywords:
+                continue
+
+            category_grouped_keywords['categories'].append({
+                'name': category.name,
+                'keywords': [
+                    keyword.name for keyword in category.filtered_keywords[:5]
+                ]
+            })
+
+        return Response(category_grouped_keywords)
 
 
 class ServiceLookupView(APIView):
