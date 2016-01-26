@@ -54,6 +54,7 @@ class Organisation(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=50)
+    show_on_home_page = models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.name
@@ -65,6 +66,7 @@ class Category(models.Model):
 class Keyword(models.Model):
     name = models.CharField(max_length=50)
     categories = models.ManyToManyField(Category)
+    show_on_home_page = models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.name
