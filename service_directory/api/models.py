@@ -46,7 +46,7 @@ class Organisation(models.Model):
     country = models.ForeignKey(Country)
     areas = models.ManyToManyField(CountryArea)
 
-    location = models.PointField(blank=True, null=True)
+    location = models.PointField()
 
     def __unicode__(self):
         return self.name
