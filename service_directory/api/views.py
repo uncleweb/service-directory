@@ -7,19 +7,22 @@ from rest_framework.views import APIView
 from service_directory.api.models import Service, Keyword, Category
 
 from service_directory.api.serializers import ServiceSerializer, \
-    ServiceSummarySerializer
+    ServiceSummarySerializer, HomePageCategoryKeywordGroupingSerializer
 
 
 class HomePageCategoryKeywordGrouping(APIView):
     """
     Retrieve keywords grouped by category for the home page
+    ---
+    GET:
+        response_serializer: HomePageCategoryKeywordGroupingSerializer
     """
     def get(self, request):
         filtered_keyword_queryset = Keyword.objects.filter(
             show_on_home_page=True
         )
 
-        home_page_categories = Category.objects.filter(
+        home_page_categories_with_keywords = Category.objects.filter(
             show_on_home_page=True
         ).prefetch_related(
             Prefetch(
@@ -29,25 +32,19 @@ class HomePageCategoryKeywordGrouping(APIView):
             )
         )[:5]
 
-        category_grouped_keywords = {
-            'categories': []
-        }
+        # exclude categories that don't have any keywords associated
+        home_page_categories_with_keywords = [
+            category for category in home_page_categories_with_keywords
+            if category.filtered_keywords
+        ]
 
-        for category in home_page_categories:
-            if not category.filtered_keywords:
-                continue
-
-            category_grouped_keywords['categories'].append({
-                'name': category.name,
-                'keywords': [
-                    keyword.name for keyword in category.filtered_keywords[:5]
-                ]
-            })
-
-        return Response(category_grouped_keywords)
+        serializer = HomePageCategoryKeywordGroupingSerializer(
+            home_page_categories_with_keywords, many=True
+        )
+        return Response(serializer.data)
 
 
-class ServiceLookupView(APIView):
+class ServiceLookup(APIView):
     """
     Query services by keyword and/or location
     ---
