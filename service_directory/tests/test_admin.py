@@ -50,15 +50,18 @@ class AdminFormsTestCase(TestCase):
             'country': self.org_cbmh.country_id,
             'areas': self.country_area.id,
             'location': self.org_cbmh.location,
-            'location_coords': '{0},{1}'.format(new_lat, new_lng)
+            'location_coords': '{0},{1}'.format(new_lat, new_lng),
         }
 
         response = self.client.post(url, data)
 
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(302, response.status_code)
+        self.assertTrue(
+            response._headers['location'][1].endswith(
+                '/admin/api/organisation/'
+            )
+        )
 
-        # TODO: make these asserts pass
-        # OrganisationModelForm.save() is not called
-        # org = Organisation.objects.get(pk=self.org_cbmh.id)
-        # self.assertEqual(new_lat, org.location.y)
-        # self.assertEqual(new_lng, org.location.x)
+        org = Organisation.objects.get(pk=self.org_cbmh.id)
+        self.assertEqual(new_lat, org.location.y)
+        self.assertEqual(new_lng, org.location.x)
