@@ -1,3 +1,6 @@
+import json
+from collections import OrderedDict
+
 from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.test import TestCase
@@ -218,11 +221,78 @@ class ServiceDetailTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        pass
+        cls.country = Country.objects.create(
+            name='South Africa',
+            iso_code='ZA'
+        )
+
+        cls.category = Category.objects.create(name='Test Category')
+
+        cls.keyword_test = Keyword.objects.create(name='test')
+        cls.keyword_test.categories.add(cls.category)
+
+        cls.org = Organisation.objects.create(
+            name='Test Organisation',
+            country=cls.country,
+            location=Point(18.505496, -33.891937, srid=4326)
+        )
+
+        cls.service = Service.objects.create(
+            organisation=cls.org
+        )
+        cls.service.categories.add(cls.category)
+        cls.service.keywords.add(cls.keyword_test)
 
     def test_get(self):
-        # TODO: write test
-        pass
+        response = self.client.get(
+            '/api/service/{0}/'.format(self.service.id),
+            format='json'
+        )
+
+        expected_response_content = json.dumps(
+            {'age_range_min': None,
+             'verified_as': u'',
+             'organisation': OrderedDict(
+                 [
+                     (u'id', self.org.id),
+                     ('name', u'Test Organisation'),
+                     ('about', u''),
+                     ('address', u''),
+                     ('telephone', u''),
+                     ('email', u''),
+                     ('web', u''),
+                     ('location',
+                      u'SRID=4326;'
+                      u'POINT (18.5054960000000008 -33.8919369999999986)'),
+                     ('country', self.country.id),
+                     ('areas', [])
+                 ]
+             ),
+             'availability_hours': u'',
+             'keywords': [
+                 OrderedDict(
+                     [
+                         (u'id', self.keyword_test.id),
+                         ('name', u'test'),
+                         ('show_on_home_page', False),
+                         ('categories', [self.category.id])
+                     ]
+                 )
+             ],
+             'age_range_max': None,
+             u'id': self.service.id,
+             'categories': [
+                 OrderedDict(
+                     [
+                         (u'id', self.category.id),
+                         ('name', u'Test Category'),
+                         ('show_on_home_page', False)
+                     ]
+                 )
+             ]}
+        )
+
+        self.assertJSONEqual(response.content, expected_response_content)
 
 
 class HomePageCategoryKeywordGroupingTestCase(TestCase):
