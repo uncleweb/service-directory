@@ -31,6 +31,18 @@ class KeywordResource(resources.ModelResource):
         fields = ('name', 'categories', 'show_on_home_page',)
 
 
+class CountryResource(resources.ModelResource):
+    class Meta:
+        model = Country
+        import_id_fields = ('name',)
+        fields = ('name', 'iso_code',)
+
+
+class CountryModelAdmin(ImportExportMixin, admin.ModelAdmin):
+    list_display = ('name', 'iso_code')
+    resource_class = CountryResource
+
+
 class CountryAreaModelAdmin(admin.ModelAdmin):
     list_display = ('name', 'level', 'country')
 
@@ -56,7 +68,7 @@ class ServiceModelAdmin(admin.ModelAdmin):
 
 
 # Register your models here.
-admin.site.register(Country)
+admin.site.register(Country, CountryModelAdmin)
 admin.site.register(CountryArea, CountryAreaModelAdmin)
 admin.site.register(Organisation, OrganisationModelAdmin)
 admin.site.register(Category, CategoryModelAdmin)
