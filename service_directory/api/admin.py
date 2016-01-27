@@ -1,3 +1,4 @@
+from import_export.widgets import ManyToManyWidget
 from models import Country, CountryArea, Organisation, Category, Service, \
     Keyword
 from django.contrib.gis import admin
@@ -5,6 +6,7 @@ from service_directory.api.forms import OrganisationModelForm
 
 from import_export import resources
 from import_export.admin import ImportExportMixin
+from import_export import fields as import_field
 
 
 class CategoryResource(resources.ModelResource):
@@ -12,6 +14,21 @@ class CategoryResource(resources.ModelResource):
         model = Category
         import_id_fields = ('name',)
         fields = ('name', 'show_on_home_page',)
+
+
+class KeywordResource(resources.ModelResource):
+    categories = import_field.Field(
+            attribute='categories',
+            column_name='categories',
+            widget=ManyToManyWidget(
+                Category,
+                field='name'
+            ))
+
+    class Meta:
+        model = Keyword
+        import_id_fields = ('name',)
+        fields = ('name', 'categories', 'show_on_home_page',)
 
 
 class CountryAreaModelAdmin(admin.ModelAdmin):
@@ -28,8 +45,9 @@ class CategoryModelAdmin(ImportExportMixin, admin.ModelAdmin):
     resource_class = CategoryResource
 
 
-class KeywordModelAdmin(admin.ModelAdmin):
+class KeywordModelAdmin(ImportExportMixin, admin.ModelAdmin):
     list_display = ('name', 'formatted_categories', 'show_on_home_page')
+    resource_class = KeywordResource
 
 
 class ServiceModelAdmin(admin.ModelAdmin):
