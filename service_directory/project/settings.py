@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_swagger',
     'haystack',
-    'service_directory.api'
+    'service_directory.api',
+    'import_export',
 ]
 
 MIDDLEWARE_CLASSES = [
