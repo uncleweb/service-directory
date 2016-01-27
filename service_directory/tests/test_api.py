@@ -218,11 +218,77 @@ class ServiceDetailTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        pass
+        cls.country = Country.objects.create(
+            name='South Africa',
+            iso_code='ZA'
+        )
+
+        cls.category = Category.objects.create(name='Test Category')
+
+        cls.keyword = Keyword.objects.create(name='test')
+        cls.keyword.categories.add(cls.category)
+
+        cls.org = Organisation.objects.create(
+            name='Test Organisation',
+            country=cls.country,
+            location=Point(18.505496, -33.891937, srid=4326)
+        )
+
+        cls.service = Service.objects.create(
+            organisation=cls.org
+        )
+        cls.service.categories.add(cls.category)
+        cls.service.keywords.add(cls.keyword)
 
     def test_get(self):
-        # TODO: write test
-        pass
+        response = self.client.get(
+            '/api/service/{0}/'.format(self.service.id),
+            format='json'
+        )
+
+        expected_response_content = '''
+            {
+                "id":%s,
+                "verified_as":"",
+                "age_range_min":null,
+                "age_range_max":null,
+                "availability_hours":"",
+                "organisation":
+                    {
+                        "id":%s,
+                        "name":"Test Organisation",
+                        "about":"",
+                        "address":"",
+                        "telephone":"",
+                        "email":"",
+                        "web":"",
+                        "location":"SRID=4326;\
+POINT (18.5054960000000008 -33.8919369999999986)",
+                        "country":%s,
+                        "areas":[]
+                    },
+                "categories":[
+                    {
+                        "id":%s,
+                        "name":"Test Category",
+                        "show_on_home_page":false
+                    }
+                ],
+                "keywords":[
+                    {
+                        "id":%s,
+                        "name":"test",
+                        "show_on_home_page":false,
+                        "categories":[
+                            %s
+                        ]
+                    }
+                ]
+            }
+        ''' % (self.service.id, self.org.id, self.country.id, self.category.id,
+               self.keyword.id, self.category.id)
+
+        self.assertJSONEqual(response.content, expected_response_content)
 
 
 class HomePageCategoryKeywordGroupingTestCase(TestCase):
@@ -230,8 +296,72 @@ class HomePageCategoryKeywordGroupingTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        pass
+        cls.category_1 = Category.objects.create(
+            name='Test Category 1',
+            show_on_home_page=True
+        )
+        cls.category_2 = Category.objects.create(
+            name='Test Category 2',
+            show_on_home_page=True
+        )
+        cls.category_3 = Category.objects.create(
+            name='Test Category 3',
+            show_on_home_page=True
+        )
+        cls.category_4 = Category.objects.create(
+            name='Test Category 4',
+            show_on_home_page=False
+        )
+
+        cls.keyword_1 = Keyword.objects.create(
+            name='test1',
+            show_on_home_page=True
+        )
+        cls.keyword_1.categories.add(cls.category_1)
+
+        cls.keyword_2 = Keyword.objects.create(
+            name='test2',
+            show_on_home_page=False
+        )
+        cls.keyword_2.categories.add(cls.category_2)
+
+        cls.keyword_3 = Keyword.objects.create(
+            name='test3',
+            show_on_home_page=True
+        )
+        cls.keyword_3.categories.add(cls.category_3, cls.category_4)
+
+        cls.keyword_4 = Keyword.objects.create(
+            name='test4',
+            show_on_home_page=True
+        )
+        cls.keyword_4.categories.add(cls.category_4)
 
     def test_get(self):
-        # TODO: write test
-        pass
+        response = self.client.get(
+            '/api/homepage_categories_keywords/',
+            format='json'
+        )
+
+        # a category should only be returned if its show_on_home_page=True
+        # a keyword should only be returned if its show_on_home_page=True
+        # AND it belongs to at least one category whose show_on_home_page=True
+
+        expected_response_content = '''
+            [
+                {
+                    "name":"Test Category 1",
+                    "keywords":[
+                        "test1"
+                    ]
+                },
+                {
+                    "name":"Test Category 3",
+                    "keywords":[
+                        "test3"
+                    ]
+                }
+            ]
+        '''
+
+        self.assertJSONEqual(response.content, expected_response_content)
