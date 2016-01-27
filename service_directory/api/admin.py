@@ -3,6 +3,16 @@ from models import Country, CountryArea, Organisation, Category, Service, \
 from django.contrib.gis import admin
 from service_directory.api.forms import OrganisationModelForm
 
+from import_export import resources
+from import_export.admin import ImportExportMixin
+
+
+class CategoryResource(resources.ModelResource):
+    class Meta:
+        model = Category
+        import_id_fields = ('name',)
+        fields = ('name', 'show_on_home_page',)
+
 
 class CountryAreaModelAdmin(admin.ModelAdmin):
     list_display = ('name', 'level', 'country')
@@ -13,8 +23,13 @@ class OrganisationModelAdmin(admin.OSMGeoAdmin):
     list_display = ('name', 'country')
 
 
+class CategoryModelAdmin(ImportExportMixin, admin.ModelAdmin):
+    list_display = ('name', 'show_on_home_page')
+    resource_class = CategoryResource
+
+
 class KeywordModelAdmin(admin.ModelAdmin):
-    list_display = ('name', 'formatted_categories')
+    list_display = ('name', 'formatted_categories', 'show_on_home_page')
 
 
 class ServiceModelAdmin(admin.ModelAdmin):
@@ -26,6 +41,6 @@ class ServiceModelAdmin(admin.ModelAdmin):
 admin.site.register(Country)
 admin.site.register(CountryArea, CountryAreaModelAdmin)
 admin.site.register(Organisation, OrganisationModelAdmin)
-admin.site.register(Category)
+admin.site.register(Category, CategoryModelAdmin)
 admin.site.register(Keyword, KeywordModelAdmin)
 admin.site.register(Service, ServiceModelAdmin)
