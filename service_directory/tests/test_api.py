@@ -300,8 +300,72 @@ class HomePageCategoryKeywordGroupingTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        pass
+        cls.category_1 = Category.objects.create(
+            name='Test Category 1',
+            show_on_home_page=True
+        )
+        cls.category_2 = Category.objects.create(
+            name='Test Category 2',
+            show_on_home_page=True
+        )
+        cls.category_3 = Category.objects.create(
+            name='Test Category 3',
+            show_on_home_page=True
+        )
+        cls.category_4 = Category.objects.create(
+            name='Test Category 4',
+            show_on_home_page=False
+        )
+
+        cls.keyword_1 = Keyword.objects.create(
+            name='test1',
+            show_on_home_page=True
+        )
+        cls.keyword_1.categories.add(cls.category_1)
+
+        cls.keyword_2 = Keyword.objects.create(
+            name='test2',
+            show_on_home_page=False
+        )
+        cls.keyword_2.categories.add(cls.category_2)
+
+        cls.keyword_3 = Keyword.objects.create(
+            name='test3',
+            show_on_home_page=True
+        )
+        cls.keyword_3.categories.add(cls.category_3, cls.category_4)
+
+        cls.keyword_4 = Keyword.objects.create(
+            name='test4',
+            show_on_home_page=True
+        )
+        cls.keyword_4.categories.add(cls.category_4)
 
     def test_get(self):
-        # TODO: write test
-        pass
+        response = self.client.get(
+            '/api/homepage_categories_keywords/',
+            format='json'
+        )
+
+        # a category should only be returned if its show_on_home_page=True
+        # a keyword should only be returned if its show_on_home_page=True
+        # AND it belongs to at least one category whose show_on_home_page=True
+
+        expected_response_content = '''
+            [
+                {
+                    "name":"Test Category 1",
+                    "keywords":[
+                        "test1"
+                    ]
+                },
+                {
+                    "name":"Test Category 3",
+                    "keywords":[
+                        "test3"
+                    ]
+                }
+            ]
+        '''
+
+        self.assertJSONEqual(response.content, expected_response_content)
