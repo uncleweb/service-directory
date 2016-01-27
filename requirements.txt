@@ -8,3 +8,5 @@ django-haystack==2.4.1
 geopy==1.11.0
 gunicorn
 dj-database-url
+
+django-import-export==0.4.2
