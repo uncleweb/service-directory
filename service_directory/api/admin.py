@@ -1,4 +1,7 @@
-from import_export.widgets import ManyToManyWidget, ForeignKeyWidget
+from django.contrib.gis.geos import Point
+from django.core.exceptions import ValidationError
+from django.utils.encoding import force_text
+from import_export.widgets import ManyToManyWidget, ForeignKeyWidget, Widget
 from models import Country, CountryArea, Organisation, Category, Service, \
     Keyword
 from django.contrib.gis import admin
@@ -7,6 +10,25 @@ from service_directory.api.forms import OrganisationModelForm
 from import_export import resources
 from import_export.admin import ImportExportMixin
 from import_export import fields as import_field
+
+
+class PointWidget(Widget):
+    def clean(self, value):
+        try:
+            lat, lng = value.split(',')
+            lat = float(lat)
+            lng = float(lng)
+            point = Point(lng, lat, srid=4326)
+        except ValueError:
+            raise ValidationError(
+                'Invalid coordinates. Coordinates must be comma-separated'
+                ' latitude,longitude decimals, eg: "-33.921124,18.417313"'
+            )
+
+        return point
+
+    def render(self, value):
+        return force_text('{0},{1}'.format(value.y, value.x))
 
 
 class CategoryResource(resources.ModelResource):
@@ -18,12 +40,12 @@ class CategoryResource(resources.ModelResource):
 
 class KeywordResource(resources.ModelResource):
     categories = import_field.Field(
-            attribute='categories',
-            column_name='categories',
-            widget=ManyToManyWidget(
-                Category,
-                field='name'
-            ))
+        attribute='categories',
+        column_name='categories',
+        widget=ManyToManyWidget(
+            Category,
+            field='name'
+        ))
 
     class Meta:
         model = Keyword
@@ -40,17 +62,36 @@ class CountryResource(resources.ModelResource):
 
 class CountryAreaResource(resources.ModelResource):
     country = import_field.Field(
-            attribute='country',
-            column_name='country',
-            widget=ForeignKeyWidget(
-                Country,
-                field='name'
-            ))
+        attribute='country',
+        column_name='country',
+        widget=ForeignKeyWidget(
+            Country,
+            field='name'
+        ))
 
     class Meta:
         model = CountryArea
         import_id_fields = ('name', 'level',)
         fields = ('name', 'level', 'country',)
+
+
+class OrganisationResource(resources.ModelResource):
+    country = import_field.Field(
+        attribute='country',
+        column_name='country',
+        widget=ForeignKeyWidget(
+            Country,
+            field='name'
+        ))
+
+    location = import_field.Field(
+        attribute='location',
+        column_name='location',
+        widget=PointWidget()
+    )
+
+    class Meta:
+        model = Organisation
 
 
 class CountryModelAdmin(ImportExportMixin, admin.ModelAdmin):
@@ -63,9 +104,10 @@ class CountryAreaModelAdmin(ImportExportMixin, admin.ModelAdmin):
     resource_class = CountryAreaResource
 
 
-class OrganisationModelAdmin(admin.OSMGeoAdmin):
+class OrganisationModelAdmin(ImportExportMixin, admin.OSMGeoAdmin):
     form = OrganisationModelForm
     list_display = ('name', 'country')
+    resource_class = OrganisationResource
 
 
 class CategoryModelAdmin(ImportExportMixin, admin.ModelAdmin):
