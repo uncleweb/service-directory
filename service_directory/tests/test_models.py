@@ -87,6 +87,7 @@ class OrganisationTestCase(TestCase):
         org = Organisation.objects.create(
             name='Test Org',
             country=self.country,
+            location=Point(18.505496, -33.891937, srid=4326)
         )
 
         org.areas.add(self.country_area_western_cape)
