@@ -30,7 +30,7 @@ class HomePageCategoryKeywordGrouping(APIView):
                 queryset=filtered_keyword_queryset,
                 to_attr='filtered_keywords'
             )
-        )[:5]
+        )
 
         # exclude categories that don't have any keywords associated
         home_page_categories_with_keywords = [
