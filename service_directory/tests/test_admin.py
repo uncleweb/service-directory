@@ -4,7 +4,7 @@ from django.test import TestCase
 from service_directory.api.models import Country, Organisation, CountryArea
 
 
-class AdminFormsTestCase(TestCase):
+class OrganisationModelFormTestCase(TestCase):
     SU_USERNAME = 'test'
     SU_PASSWORD = 'test'
 
@@ -32,14 +32,12 @@ class AdminFormsTestCase(TestCase):
         )
         cls.org_cbmh.areas.add(cls.country_area)
 
-    def test_organisation_model_form_location_coords_field(self):
+        cls.api_url = '/admin/api/organisation/{0}/'.format(cls.org_cbmh.id)
+
+    def setUp(self):
         self.client.login(username=self.SU_USERNAME, password=self.SU_PASSWORD)
 
-        url = '/admin/api/organisation/{0}/'.format(self.org_cbmh.id)
-
-        new_lat = -33.921124
-        new_lng = 18.417313
-
+    def get_post_payload_for_test_organisation(self):
         data = {
             'name': self.org_cbmh.name,
             'about': self.org_cbmh.about,
@@ -49,16 +47,59 @@ class AdminFormsTestCase(TestCase):
             'web': self.org_cbmh.web,
             'country': self.org_cbmh.country_id,
             'areas': self.country_area.id,
-            'location': self.org_cbmh.location,
-            'location_coords': '{0},{1}'.format(new_lat, new_lng)
+            'location': self.org_cbmh.location
         }
+        return data
 
-        response = self.client.post(url, data)
+    def test_location_coords_field_overrides_map_location(self):
+        new_lat = -33.921124
+        new_lng = 18.417313
 
-        self.assertEqual(200, response.status_code)
+        data = self.get_post_payload_for_test_organisation()
+        data['location_coords'] = '{0},{1}'.format(new_lat, new_lng)
 
-        # TODO: make these asserts pass
-        # OrganisationModelForm.save() is not called
-        # org = Organisation.objects.get(pk=self.org_cbmh.id)
-        # self.assertEqual(new_lat, org.location.y)
-        # self.assertEqual(new_lng, org.location.x)
+        response = self.client.post(self.api_url, data)
+
+        self.assertEqual(302, response.status_code)
+        self.assertTrue(
+            response._headers['location'][1].endswith(
+                '/admin/api/organisation/'
+            )
+        )
+
+        org = Organisation.objects.get(pk=self.org_cbmh.id)
+        self.assertEqual(new_lat, org.location.y)
+        self.assertEqual(new_lng, org.location.x)
+
+    def test_location_coords_field_validation(self):
+        data = self.get_post_payload_for_test_organisation()
+        data['location_coords'] = '123abc'
+
+        response = self.client.post(self.api_url, data)
+
+        self.assertContains(response, 'Invalid coordinates')
+
+    def test_map_location_required_if_location_coords_field_empty(self):
+        data = self.get_post_payload_for_test_organisation()
+        del data['location']
+
+        response = self.client.post(self.api_url, data)
+
+        self.assertContains(response, 'No geometry value provided')
+
+    def test_map_location_not_required_if_location_coords_supplied(self):
+        new_lat = -33.921124
+        new_lng = 18.417313
+
+        data = self.get_post_payload_for_test_organisation()
+        del data['location']
+        data['location_coords'] = '{0},{1}'.format(new_lat, new_lng)
+
+        response = self.client.post(self.api_url, data)
+
+        self.assertEqual(302, response.status_code)
+        self.assertTrue(
+            response._headers['location'][1].endswith(
+                '/admin/api/organisation/'
+            )
+        )

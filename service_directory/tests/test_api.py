@@ -211,3 +211,27 @@ class ServiceLookupTestCase(TestCase):
                              response.data[1]['keywords'])
         self.assertEqual('Constantiaberg Medi Clinic',
                          response.data[1]['organisation']['name'])
+
+
+class ServiceDetailTestCase(TestCase):
+    client_class = APIClient
+
+    @classmethod
+    def setUpTestData(cls):
+        pass
+
+    def test_get(self):
+        # TODO: write test
+        pass
+
+
+class HomePageCategoryKeywordGroupingTestCase(TestCase):
+    client_class = APIClient
+
+    @classmethod
+    def setUpTestData(cls):
+        pass
+
+    def test_get(self):
+        # TODO: write test
+        pass

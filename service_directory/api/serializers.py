@@ -1,11 +1,23 @@
 from collections import OrderedDict
 
-from models import Service, Organisation
+from models import Service, Organisation, Category
 from rest_framework import serializers
+
+
+class HomePageCategoryKeywordGroupingSerializer(serializers.ModelSerializer):
+    keywords = serializers.StringRelatedField(source='filtered_keywords',
+                                              many=True)
+
+    class Meta:
+        model = Category
+        fields = ('name', 'keywords')
 
 
 class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
+        # Swagger does not deal well with NestedSerializer (ie: depth attr)
+        # https://github.com/marcgibbons/django-rest-swagger/issues/398
+        # Explicitly defining the descendant serializers would solve it
         model = Service
         depth = 1
 
@@ -25,7 +37,7 @@ class ServiceSummarySerializer(serializers.ModelSerializer):
         fields = ('id', 'keywords', 'organisation', 'distance')
 
     # Note: Strictly speaking nothing above this comment is required for the
-    # serializer to work, however it helps swagger to work out what the
+    # serializer to work, however it helps Swagger to work out what the
     # response will look like
 
     def to_representation(self, instance):
