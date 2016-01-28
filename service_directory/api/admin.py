@@ -71,8 +71,6 @@ class CountryAreaResource(resources.ModelResource):
 
     class Meta:
         model = CountryArea
-        import_id_fields = ('name', 'level',)
-        fields = ('name', 'level', 'country',)
 
 
 class OrganisationResource(resources.ModelResource):
