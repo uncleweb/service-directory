@@ -1,12 +1,14 @@
 Django==1.8.8
 djangorestframework==3.3.2
 django-rest-swagger==0.3.4
+django-import-export==0.4.2
 psycopg2==2.6.1
 
 elasticsearch<2.0.0
 django-haystack==2.4.1
 geopy==1.11.0
+
 gunicorn
 dj-database-url
 
-django-import-export==0.4.2
+raven==5.0.0
