@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'haystack',
     'service_directory.api',
     'import_export',
+    'raven.contrib.django.raven_compat',
 ]
 
 MIDDLEWARE_CLASSES = [
