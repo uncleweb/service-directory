@@ -94,6 +94,27 @@ class OrganisationResource(resources.ModelResource):
         model = Organisation
 
 
+class ServiceResource(resources.ModelResource):
+    categories = import_field.Field(
+        attribute='categories',
+        column_name='categories',
+        widget=ManyToManyWidget(
+            Category,
+            field='name'
+        ))
+
+    keywords = import_field.Field(
+        attribute='keywords',
+        column_name='keywords',
+        widget=ManyToManyWidget(
+            Keyword,
+            field='name'
+        ))
+
+    class Meta:
+        model = Service
+
+
 class CountryModelAdmin(ImportExportMixin, admin.ModelAdmin):
     list_display = ('name', 'iso_code')
     resource_class = CountryResource
@@ -120,9 +141,10 @@ class KeywordModelAdmin(ImportExportMixin, admin.ModelAdmin):
     resource_class = KeywordResource
 
 
-class ServiceModelAdmin(admin.ModelAdmin):
+class ServiceModelAdmin(ImportExportMixin, admin.ModelAdmin):
     list_display = ('organisation', 'formatted_categories',
                     'formatted_keywords')
+    resource_class = ServiceResource
 
 
 # Register your models here.
