@@ -133,7 +133,7 @@ class OrganisationResource(resources.ModelResource):
 
 class ServiceResource(resources.ModelResource):
     def import_obj(self, obj, data, dry_run):
-        #check categories
+        # check categories
         service_category_names_set = set(
             data.get('categories', u'').split(',')
         )
@@ -157,7 +157,7 @@ class ServiceResource(resources.ModelResource):
                     data.get('id', u''), missing_categories)
             )
 
-        #check keywords
+        # check keywords
         service_keyword_names_set = set(
             data.get('keywords', u'').split(',')
         )

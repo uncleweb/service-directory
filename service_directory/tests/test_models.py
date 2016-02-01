@@ -38,7 +38,7 @@ class OrganisationTestCase(TestCase):
             iso_code='ZA'
         )
 
-        org = Organisation.objects.create(
+        Organisation.objects.create(
             name='Test Org',
             country=self.country,
             location=Point(18.505496, -33.891937, srid=4326)
