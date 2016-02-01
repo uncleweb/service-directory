@@ -43,6 +43,8 @@ Some models accept lists of things to be associated with. These must be quoted a
 name,categories,show_on_home_page
 HIV,"Health,Education,Teenager",1
 
+NOTE THAT THE CATEGORIES MUST ALREADY HAVE BEEN IMPORTED. This applies to all models that are referred to during the import. Eg Countries must already exist before they can be referred to by Organisations. That is why the import order is necessary for the moment.
+
 
 An Organisation imported with multiple Country Areas would look like this:
 
