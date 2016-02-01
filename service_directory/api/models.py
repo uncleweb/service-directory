@@ -1,12 +1,22 @@
 from __future__ import unicode_literals
 
-from django.db import models
 from django.contrib.gis.db.models import PointField
+from django.db import models
+
+
+class CaseInsensitiveTextField(models.TextField):
+    """
+    See
+    http://stackoverflow.com/a/26192509
+    http://www.postgresql.org/docs/8.4/static/citext.html
+    """
+    def db_type(self, connection):
+        return 'citext'
 
 
 class Country(models.Model):
-    name = models.CharField(max_length=100)
-    iso_code = models.CharField(max_length=3)
+    name = CaseInsensitiveTextField(max_length=100, unique=True)
+    iso_code = CaseInsensitiveTextField(max_length=3, unique=True)
 
     def __unicode__(self):
         return self.name
@@ -32,6 +42,9 @@ class CountryArea(models.Model):
             self.name, self.get_level_display(), self.country
         )
 
+    class Meta:
+        unique_together = (('name', 'level', 'country'),)
+
 
 class Organisation(models.Model):
     name = models.CharField(max_length=100)
@@ -52,7 +65,8 @@ class Organisation(models.Model):
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=50)
+    name = CaseInsensitiveTextField(max_length=50, unique=True)
+
     show_on_home_page = models.BooleanField(default=False)
 
     def __unicode__(self):
@@ -63,7 +77,7 @@ class Category(models.Model):
 
 
 class Keyword(models.Model):
-    name = models.CharField(max_length=50)
+    name = CaseInsensitiveTextField(max_length=50, unique=True)
     categories = models.ManyToManyField(Category)
     show_on_home_page = models.BooleanField(default=False)
 
