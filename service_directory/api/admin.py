@@ -111,7 +111,7 @@ class OrganisationResource(resources.ModelResource):
                     data.get('name', u''), missing_countries)
             )
 
-        return super(KeywordResource, self).import_obj(obj, data, dry_run)
+        return super(OrganisationResource, self).import_obj(obj, data, dry_run)
 
     country = import_field.Field(
         attribute='country',
@@ -132,6 +132,33 @@ class OrganisationResource(resources.ModelResource):
 
 
 class ServiceResource(resources.ModelResource):
+    def import_obj(self, obj, data, dry_run):
+        #Organisations, Categories, Keywords
+        keyword_category_names_set = set(
+            data.get('categories', u'').split(',')
+        )
+
+        db_categories = Category.objects.filter(
+            name__in=keyword_category_names_set
+        )
+
+        db_categories_set = set(
+            [db_category.name for db_category in db_categories]
+        )
+
+        if keyword_category_names_set != db_categories_set:
+            missing_categories = keyword_category_names_set.difference(
+                db_categories_set
+            )
+            raise ValidationError(
+                u"Keyword '{0}' is being imported with "
+                u"Categories that are missing and "
+                u"need to be imported/created: {1}".format(
+                    data.get('name', u''), missing_categories)
+            )
+
+        return super(KeywordResource, self).import_obj(obj, data, dry_run)
+
     categories = import_field.Field(
         attribute='categories',
         column_name='categories',
