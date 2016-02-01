@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from models import Service, Organisation, Category
+from models import Service, Organisation, Category, Keyword
 from rest_framework import serializers
 
 
@@ -11,6 +11,11 @@ class HomePageCategoryKeywordGroupingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ('name', 'keywords')
+
+
+class KeywordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Keyword
 
 
 class ServiceSerializer(serializers.ModelSerializer):

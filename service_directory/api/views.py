@@ -1,13 +1,14 @@
 from django.contrib.gis.geos import Point
 from django.db.models.query import Prefetch
 from haystack.query import SearchQuerySet
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from service_directory.api.models import Service, Keyword, Category
 
 from service_directory.api.serializers import ServiceSerializer, \
-    ServiceSummarySerializer, HomePageCategoryKeywordGroupingSerializer
+    ServiceSummarySerializer, HomePageCategoryKeywordGroupingSerializer, \
+    KeywordSerializer
 
 
 class HomePageCategoryKeywordGrouping(APIView):
@@ -42,6 +43,30 @@ class HomePageCategoryKeywordGrouping(APIView):
             home_page_categories_with_keywords, many=True
         )
         return Response(serializer.data)
+
+
+class KeywordList(ListAPIView):
+    """
+    List Keywords, optionally filtering by category
+    ---
+    GET:
+        parameters:
+            - name: category
+              type: string
+              paramType: query
+              allowMultiple: true
+    """
+    serializer_class = KeywordSerializer
+
+    def get_queryset(self):
+        queryset = Keyword.objects.all()
+
+        category_list = self.request.query_params.getlist('category')
+
+        if category_list:
+            queryset = queryset.filter(categories__name__in=category_list)
+
+        return queryset
 
 
 class ServiceLookup(APIView):
