@@ -2,7 +2,7 @@ from django.contrib.gis.geos import Point
 from django.core.exceptions import ValidationError
 from django.utils.encoding import force_text
 from import_export.widgets import ManyToManyWidget, ForeignKeyWidget, Widget
-from models import Country, CountryArea, Organisation, Category, Service, \
+from models import Country, Organisation, Category, Service, \
     Keyword
 from django.contrib.gis import admin
 from service_directory.api.forms import OrganisationModelForm
@@ -86,20 +86,33 @@ class CountryResource(resources.ModelResource):
         fields = ('name', 'iso_code',)
 
 
-class CountryAreaResource(resources.ModelResource):
-    country = import_field.Field(
-        attribute='country',
-        column_name='country',
-        widget=ForeignKeyWidget(
-            Country,
-            field='name'
-        ))
-
-    class Meta:
-        model = CountryArea
-
-
 class OrganisationResource(resources.ModelResource):
+    def import_obj(self, obj, data, dry_run):
+        organisation_country_names_set = set(
+            data.get('country', u'').split(',')
+        )
+
+        db_countries = Country.objects.filter(
+            name__in=organisation_country_names_set
+        )
+
+        db_countries_set = set(
+            [db_country.name for db_country in db_countries]
+        )
+
+        if organisation_country_names_set != db_countries_set:
+            missing_countries = organisation_country_names_set.difference(
+                db_countries_set
+            )
+            raise ValidationError(
+                u"Organisation '{0}' is being imported with "
+                u"Countries that are missing and "
+                u"need to be imported/created: {1}".format(
+                    data.get('name', u''), missing_countries)
+            )
+
+        return super(KeywordResource, self).import_obj(obj, data, dry_run)
+
     country = import_field.Field(
         attribute='country',
         column_name='country',
@@ -144,11 +157,6 @@ class CountryModelAdmin(ImportExportMixin, admin.ModelAdmin):
     resource_class = CountryResource
 
 
-class CountryAreaModelAdmin(ImportExportMixin, admin.ModelAdmin):
-    list_display = ('name', 'level', 'country')
-    resource_class = CountryAreaResource
-
-
 class OrganisationModelAdmin(ImportExportMixin, admin.OSMGeoAdmin):
     form = OrganisationModelForm
     list_display = ('name', 'country')
@@ -173,7 +181,6 @@ class ServiceModelAdmin(ImportExportMixin, admin.ModelAdmin):
 
 # Register your models here.
 admin.site.register(Country, CountryModelAdmin)
-admin.site.register(CountryArea, CountryAreaModelAdmin)
 admin.site.register(Organisation, OrganisationModelAdmin)
 admin.site.register(Category, CategoryModelAdmin)
 admin.site.register(Keyword, KeywordModelAdmin)

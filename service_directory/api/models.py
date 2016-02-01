@@ -25,27 +25,6 @@ class Country(models.Model):
         verbose_name_plural = 'countries'
 
 
-class CountryArea(models.Model):
-    AREA_LEVELS = [
-        (1, 'Province/State'),
-        (2, 'Region'),
-        (3, 'Municipality/City/Town'),
-        (4, 'Suburb/Area')
-    ]
-
-    name = models.CharField(max_length=100)
-    level = models.IntegerField(choices=AREA_LEVELS)
-    country = models.ForeignKey(Country)
-
-    def __unicode__(self):
-        return '{0} ({1} in {2})'.format(
-            self.name, self.get_level_display(), self.country
-        )
-
-    class Meta:
-        unique_together = (('name', 'level', 'country'),)
-
-
 class Organisation(models.Model):
     name = models.CharField(max_length=100)
     about = models.CharField(max_length=500, blank=True)
@@ -56,7 +35,6 @@ class Organisation(models.Model):
     web = models.URLField(blank=True)
 
     country = models.ForeignKey(Country)
-    areas = models.ManyToManyField(CountryArea)
 
     location = PointField(srid=4326)
 

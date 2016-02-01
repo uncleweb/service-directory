@@ -1,6 +1,6 @@
 from django.contrib.gis.geos import Point
 from django.test import TestCase
-from service_directory.api.models import Country, CountryArea, Organisation, \
+from service_directory.api.models import Country, Organisation, \
     Category, Service, Keyword
 
 
@@ -31,40 +31,6 @@ class CountryTestCase(TestCase):
         self.assertEqual('SA', countries[0].iso_code)
 
 
-class CountryAreaTestCase(TestCase):
-    def setUp(self):
-        self.country = Country.objects.create(
-            name='South Africa',
-            iso_code='ZA'
-        )
-
-        CountryArea.objects.create(
-            name='Western Cape',
-            level=CountryArea.AREA_LEVELS[0][0],  # Province/State
-            country=self.country
-        )
-
-    def test_query(self):
-        country_areas = CountryArea.objects.filter(name='Western Cape')
-
-        self.assertEqual(1, len(country_areas))
-        self.assertEqual('Western Cape', country_areas[0].name)
-        self.assertEqual('Western Cape (Province/State in South Africa)',
-                         country_areas[0].__unicode__())
-
-    def test_update(self):
-        country_areas = CountryArea.objects.filter(name='Western Cape')
-
-        country_area = country_areas[0]
-        country_area.name = 'WC'
-        country_area.save()
-
-        country_areas = CountryArea.objects.filter(name='WC')
-
-        self.assertEqual(1, len(country_areas))
-        self.assertEqual('WC', country_areas[0].name)
-
-
 class OrganisationTestCase(TestCase):
     def setUp(self):
         self.country = Country.objects.create(
@@ -72,26 +38,11 @@ class OrganisationTestCase(TestCase):
             iso_code='ZA'
         )
 
-        self.country_area_western_cape = CountryArea.objects.create(
-            name='Western Cape',
-            level=CountryArea.AREA_LEVELS[0][0],  # Province/State
-            country=self.country
-        )
-
-        self.country_area_cape_town = CountryArea.objects.create(
-            name='Cape Town',
-            level=CountryArea.AREA_LEVELS[2][0],  # Municipality/City/Town
-            country=self.country
-        )
-
         org = Organisation.objects.create(
             name='Test Org',
             country=self.country,
             location=Point(18.505496, -33.891937, srid=4326)
         )
-
-        org.areas.add(self.country_area_western_cape)
-        org.areas.add(self.country_area_cape_town)
 
     def test_query(self):
         organisations = Organisation.objects.filter(name='Test Org')

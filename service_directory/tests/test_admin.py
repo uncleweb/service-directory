@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.test import TestCase
-from service_directory.api.models import Country, Organisation, CountryArea
+from service_directory.api.models import Country, Organisation
 
 
 class OrganisationModelFormTestCase(TestCase):
@@ -19,18 +19,11 @@ class OrganisationModelFormTestCase(TestCase):
             iso_code='ZA'
         )
 
-        cls.country_area = CountryArea.objects.create(
-            name='Western Cape',
-            level=CountryArea.AREA_LEVELS[0][0],  # Province/State
-            country=cls.country
-        )
-
         cls.org_cbmh = Organisation.objects.create(
             name='Netcare Christiaan Barnard Memorial Hospital',
             country=cls.country,
             location=Point(18.418231, -33.921859, srid=4326)
         )
-        cls.org_cbmh.areas.add(cls.country_area)
 
         cls.api_url = '/admin/api/organisation/{0}/'.format(cls.org_cbmh.id)
 
