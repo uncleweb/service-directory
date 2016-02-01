@@ -17,8 +17,7 @@ The import order is:
 Countries
 Categories
 Keywords (which rely on Categories)
-Country Areas (which rely on Countries)
-Organisations (which rely on Countries, Country Areas)
+Organisations (which rely on Countries)
 Services (which rely on Organisations, Categories, Keywords)
 
 
@@ -26,7 +25,7 @@ Within the imports, certain models can be referred to by their Natural identifie
 
 Countries, Categories, Keywords can be referred to by name
 
-Country Areas, Organisations, Services must be referred to by numeric ID
+Organisations, Services must be referred to by numeric ID
 
 Boolean (true/false) fields are set using 0 or 1 where 1 is true. NOT the text 'true','false','yes','no',etc...
 
@@ -46,10 +45,10 @@ HIV,"Health,Education,Teenager",1
 NOTE THAT THE CATEGORIES MUST ALREADY HAVE BEEN IMPORTED. This applies to all models that are referred to during the import. Eg Countries must already exist before they can be referred to by Organisations. That is why the import order is necessary for the moment.
 
 
-An Organisation imported with multiple Country Areas would look like this:
+An Organisation import would look like this:
 
-id,name,about,address,telephone,email,web,country,areas,location
-1,"Orphan Puppies","We're amazing","123 Place Rd","3209123","admin@test.com","http://www.google.com","South Africa","1,2","-33.891,18.505"
+id,name,about,address,telephone,email,web,country,location
+1,"Orphan Puppies","We're amazing","123 Place Rd","3209123","admin@test.com","http://www.google.com","South Africa","-33.891,18.505"
 
-Notice that here we had to provide an ID for the organisation to correctly import. And that the Areas column is a comma seperated list of IDs.
+Notice that here we had to provide an ID for the organisation to correctly import.
 Notice also the location is quoted, comma seperated, decimal, latitude and longitude.
