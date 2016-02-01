@@ -77,7 +77,6 @@ class KeywordResource(resources.ModelResource):
         model = Keyword
         import_id_fields = ('name',)
         fields = ('name', 'categories', 'show_on_home_page',)
-        raise_errors = True
 
 
 class CountryResource(resources.ModelResource):
