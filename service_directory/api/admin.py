@@ -133,31 +133,55 @@ class OrganisationResource(resources.ModelResource):
 
 class ServiceResource(resources.ModelResource):
     def import_obj(self, obj, data, dry_run):
-        #Organisations, Categories, Keywords
-        keyword_category_names_set = set(
+        #check categories
+        service_category_names_set = set(
             data.get('categories', u'').split(',')
         )
 
         db_categories = Category.objects.filter(
-            name__in=keyword_category_names_set
+            name__in=service_category_names_set
         )
 
         db_categories_set = set(
             [db_category.name for db_category in db_categories]
         )
 
-        if keyword_category_names_set != db_categories_set:
-            missing_categories = keyword_category_names_set.difference(
+        if service_category_names_set != db_categories_set:
+            missing_categories = service_category_names_set.difference(
                 db_categories_set
             )
             raise ValidationError(
-                u"Keyword '{0}' is being imported with "
+                u"Service '{0}' is being imported with "
                 u"Categories that are missing and "
                 u"need to be imported/created: {1}".format(
-                    data.get('name', u''), missing_categories)
+                    data.get('id', u''), missing_categories)
             )
 
-        return super(KeywordResource, self).import_obj(obj, data, dry_run)
+        #check keywords
+        service_keyword_names_set = set(
+            data.get('keywords', u'').split(',')
+        )
+
+        db_keywords = Keyword.objects.filter(
+            name__in=service_keyword_names_set
+        )
+
+        db_keywords_set = set(
+            [db_keyword.name for db_keyword in db_keywords]
+        )
+
+        if service_keyword_names_set != db_keywords_set:
+            missing_keywords = service_keyword_names_set.difference(
+                db_keywords_set
+            )
+            raise ValidationError(
+                u"Service '{0}' is being imported with "
+                u"Keywords that are missing and "
+                u"need to be imported/created: {1}".format(
+                    data.get('id', u''), missing_keywords)
+            )
+
+        return super(ServiceResource, self).import_obj(obj, data, dry_run)
 
     categories = import_field.Field(
         attribute='categories',
