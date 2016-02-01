@@ -55,7 +55,7 @@ class Organisation(models.Model):
     email = models.EmailField(blank=True)
     web = models.URLField(blank=True)
 
-    country = models.ForeignKey(Country)
+    country = models.ForeignKey(Country, on_delete=models.PROTECT)
     areas = models.ManyToManyField(CountryArea)
 
     location = PointField(srid=4326)
