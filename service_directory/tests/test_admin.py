@@ -39,7 +39,6 @@ class OrganisationModelFormTestCase(TestCase):
             'email': self.org_cbmh.email,
             'web': self.org_cbmh.web,
             'country': self.org_cbmh.country_id,
-            'areas': self.country_area.id,
             'location': self.org_cbmh.location
         }
         return data

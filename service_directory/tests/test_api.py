@@ -264,8 +264,7 @@ class ServiceDetailTestCase(TestCase):
                         "web":"",
                         "location":"SRID=4326;\
 POINT (18.5054960000000008 -33.8919369999999986)",
-                        "country":%s,
-                        "areas":[]
+                        "country":%s
                     },
                 "categories":[
                     {
