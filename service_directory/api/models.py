@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
-from django.contrib.gis.db import models
+from django.db import models
+from django.contrib.gis.db.models import PointField
 
 
 class Country(models.Model):
@@ -33,8 +34,6 @@ class CountryArea(models.Model):
 
 
 class Organisation(models.Model):
-    objects = models.GeoManager()
-
     name = models.CharField(max_length=100)
     about = models.CharField(max_length=500, blank=True)
 
@@ -46,7 +45,7 @@ class Organisation(models.Model):
     country = models.ForeignKey(Country)
     areas = models.ManyToManyField(CountryArea)
 
-    location = models.PointField(srid=4326)
+    location = PointField(srid=4326)
 
     def __unicode__(self):
         return self.name
@@ -80,8 +79,6 @@ class Keyword(models.Model):
 
 
 class Service(models.Model):
-    objects = models.GeoManager()
-
     categories = models.ManyToManyField(Category)
     keywords = models.ManyToManyField(Keyword)
 
