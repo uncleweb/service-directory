@@ -1,2 +1,2 @@
-id,name,about,address,telephone,email,web,country,areas,location
-1,"Orphan Puppies","We're amazing","123 Place Rd","3209123","admin@test.com","http://www.google.com","South Africa","1,2","-33.891,18.505"
+id,name,about,address,telephone,email,web,country,location
+1,"Orphan Puppies","We're amazing","123 Place Rd","3209123","admin@test.com","http://www.google.com","South Africa","-33.891,18.505"
