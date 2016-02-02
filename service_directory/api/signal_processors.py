@@ -32,7 +32,9 @@ class BatchingSignalProcessor(RealtimeSignalProcessor):
     def flush_changes(self):
         while True:
             try:
-                (sender, pk), (method, instance) = self._change_list.popitem(last=False)
+                (sender, pk), (method, instance) = self._change_list.popitem(
+                    last=False
+                )
             except KeyError:
                 break
             else:
