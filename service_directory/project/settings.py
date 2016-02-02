@@ -150,7 +150,7 @@ SWAGGER_SETTINGS = {
 # Haystack search
 HAYSTACK_CONNECTIONS = {
     'default': {
-        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'ENGINE': 'service_directory.api.django-haystack_mod.FuzzyElasticsearchSearchEngine',
         'URL': 'http://127.0.0.1:9200',
         'INDEX_NAME': 'haystack',
     },

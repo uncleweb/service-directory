@@ -101,7 +101,7 @@ class ServiceLookup(APIView):
         sqs = SearchQuerySet()
 
         if keyword:
-            sqs = sqs.filter(text=keyword)
+            sqs = sqs.filter(text__fuzzy=keyword)
 
         if point:
             sqs = sqs.distance('location', point).order_by('distance')
