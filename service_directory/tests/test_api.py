@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.test import TestCase
+from haystack import signal_processor
 from haystack.backends.elasticsearch_backend import ElasticsearchSearchBackend
 from rest_framework.test import APIClient
 from service_directory.api.models import Country, Category, Organisation, \
@@ -79,12 +80,6 @@ class ServiceLookupTestCase(TestCase):
             cls.keyword_test, cls.keyword_heart, cls.keyword_transplant,
             cls.keyword_trauma
         )
-        # need to explicitly call save because calls to add() with M2M
-        # relationships will not call save() methods and thus the haystack
-        # RealtimeSignalProcessor will not know to update the index
-        # see https://docs.djangoproject.com/en/1.8/ref/models/relations/
-        # #django.db.models.fields.related.RelatedManager.add
-        test_service_1.save()
 
         test_service_2 = Service.objects.create(
             organisation=cls.org_khc
@@ -93,7 +88,6 @@ class ServiceLookupTestCase(TestCase):
         test_service_2.keywords.add(
             cls.keyword_test, cls.keyword_hiv, cls.keyword_aids
         )
-        test_service_2.save()
 
         test_service_3 = Service.objects.create(
             organisation=cls.org_cmc
@@ -102,7 +96,16 @@ class ServiceLookupTestCase(TestCase):
         test_service_3.keywords.add(
             cls.keyword_test, cls.keyword_trauma, cls.keyword_accident
         )
-        test_service_3.save()
+
+        # Usually the middleware is responsible for doing this
+        # See HaystackBatchFlushMiddleware & BatchingSignalProcessor
+        #
+        # We're using a custom SignalProcessor because calls to add() with M2M
+        # relationships will not call save() methods and thus the haystack
+        # RealtimeSignalProcessor will not know to update the index
+        # see https://docs.djangoproject.com/en/1.8/ref/models/relations/
+        # #django.db.models.fields.related.RelatedManager.add
+        signal_processor.flush_changes()
 
     def test_get_without_parameters(self):
         response = self.client.get('/api/service_lookup/', format='json')
