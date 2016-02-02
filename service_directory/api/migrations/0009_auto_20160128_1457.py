@@ -13,8 +13,8 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunSQL(
-            "CREATE EXTENSION citext;",
-            reverse_sql="DROP EXTENSION citext"
+            "CREATE EXTENSION IF NOT EXISTS citext;",
+            reverse_sql="DROP EXTENSION IF EXISTS citext"
         ),
         migrations.AlterField(
             model_name='category',
