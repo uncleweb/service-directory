@@ -1,9 +1,10 @@
 from django.contrib.gis.geos import Point
 from django.db.models.query import Prefetch
-from haystack.query import SearchQuerySet
 from rest_framework.generics import RetrieveAPIView, ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from service_directory.api.haystack_elasticsearch_raw_query.\
+    custom_elasticsearch import ConfigurableSearchQuerySet
 from service_directory.api.models import Service, Keyword, Category
 
 from service_directory.api.serializers import ServiceSerializer, \
@@ -98,10 +99,18 @@ class ServiceLookup(APIView):
         if 'keyword' in request.query_params:
             keyword = request.query_params['keyword'].strip()
 
-        sqs = SearchQuerySet()
+        sqs = ConfigurableSearchQuerySet().models(Service)
 
         if keyword:
-            sqs = sqs.filter(text__fuzzy=keyword)
+            query = {
+                "match": {
+                    "text": {
+                        "query": keyword,
+                        "fuzziness": "AUTO"
+                    }
+                }
+            }
+            sqs = sqs.custom_query(query)
 
         if point:
             sqs = sqs.distance('location', point).order_by('distance')
