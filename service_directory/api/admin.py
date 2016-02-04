@@ -3,7 +3,7 @@ from import_export.admin import ImportExportMixin
 from models import Country, Organisation, Category, Service, Keyword
 from service_directory.api.admin_import_export import CountryResource, \
     OrganisationResource, CategoryResource, KeywordResource, ServiceResource
-from service_directory.api.forms import OrganisationModelForm
+from service_directory.api.admin_model_forms import OrganisationModelForm
 
 
 class CountryModelAdmin(ImportExportMixin, admin.ModelAdmin):
