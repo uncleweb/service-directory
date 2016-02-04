@@ -6,9 +6,9 @@ from haystack.signals import RealtimeSignalProcessor
 # Ref: http://stackoverflow.com/a/31642337
 class BatchingSignalProcessor(RealtimeSignalProcessor):
     """
-    RealtimeSignalProcessor connects to Django model signals
-    we store them locally for processing later - must call
-    ``flush_changes`` from somewhere else (eg middleware)
+    RealtimeSignalProcessor connects to Django model signals.
+    We store them locally for processing later - must call
+    ``flush_changes`` from somewhere else (eg: middleware).
     """
 
     # Haystack instantiates this as a singleton
