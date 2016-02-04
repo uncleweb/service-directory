@@ -48,7 +48,7 @@ class HomePageCategoryKeywordGrouping(APIView):
 
 class KeywordList(ListAPIView):
     """
-    List Keywords, optionally filtering by category
+    List keywords, optionally filtering by category
     ---
     GET:
         parameters:

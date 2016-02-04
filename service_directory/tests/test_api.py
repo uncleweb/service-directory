@@ -9,22 +9,26 @@ from service_directory.api.models import Country, Category, Organisation, \
 from service_directory.api.search_indexes import ServiceIndex
 
 
+def reset_haystack_index():
+    # clear the haystack index which may have been left in a bad state by
+    # other tests
+    search_backend = ElasticsearchSearchBackend(
+        'default',
+        URL=settings.HAYSTACK_CONNECTIONS['default']['URL'],
+        INDEX_NAME=settings.HAYSTACK_CONNECTIONS['default']['INDEX_NAME']
+    )
+    search_backend.clear()
+
+    # this sets up the required mappings for us
+    search_backend.update(ServiceIndex(), [])
+
+
 class ServiceLookupTestCase(TestCase):
     client_class = APIClient
 
     @classmethod
     def setUpTestData(cls):
-        # clear the haystack index which may have been left in a bad state by
-        # other tests
-        search_backend = ElasticsearchSearchBackend(
-            'default',
-            URL=settings.HAYSTACK_CONNECTIONS['default']['URL'],
-            INDEX_NAME=settings.HAYSTACK_CONNECTIONS['default']['INDEX_NAME']
-        )
-        search_backend.clear()
-
-        # this sets up the required mappings for us
-        search_backend.update(ServiceIndex(), [])
+        reset_haystack_index()
 
         cls.country = Country.objects.create(
             name='South Africa',
@@ -216,6 +220,22 @@ class ServiceLookupTestCase(TestCase):
                          response.data[1]['organisation']['name'])
 
 
+class ServiceLookupWithoutDataTestCase(TestCase):
+    client_class = APIClient
+
+    @classmethod
+    def setUpTestData(cls):
+        reset_haystack_index()
+
+    def test_get_without_parameters(self):
+        # this is here purely to achieve 100% coverage
+        # it tests the single statement that is otherwise missed in
+        # ServiceLookup.get() - the last statement: return Response([])
+        response = self.client.get('/api/service_lookup/', format='json')
+
+        self.assertEqual(0, len(response.data))
+
+
 class ServiceDetailTestCase(TestCase):
     client_class = APIClient
 
@@ -365,5 +385,114 @@ class HomePageCategoryKeywordGroupingTestCase(TestCase):
                 }
             ]
         '''
+
+        self.assertJSONEqual(response.content, expected_response_content)
+
+
+class KeywordListTestCase(TestCase):
+    client_class = APIClient
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.category_1 = Category.objects.create(
+            name='Test Category 1'
+        )
+        cls.category_2 = Category.objects.create(
+            name='Test Category 2'
+        )
+
+        cls.cat1kw1 = Keyword.objects.create(
+            name='cat1kw1'
+        )
+        cls.cat1kw1.categories.add(cls.category_1)
+
+        cls.cat1kw2 = Keyword.objects.create(
+            name='cat1kw2'
+        )
+        cls.cat1kw2.categories.add(cls.category_1)
+
+        cls.cat2kw1 = Keyword.objects.create(
+            name='cat2kw1'
+        )
+        cls.cat2kw1.categories.add(cls.category_2)
+
+        cls.cat2kw2 = Keyword.objects.create(
+            name='cat2kw2'
+        )
+        cls.cat2kw2.categories.add(cls.category_2)
+
+    def test_get_without_params(self):
+        response = self.client.get(
+            '/api/keywords/',
+            format='json'
+        )
+
+        # all keywords should be returned
+        self.assertEqual(4, len(response.data))
+
+    def test_get_with_params(self):
+        response = self.client.get(
+            '/api/keywords/',
+            {'category': self.category_1.name},
+            format='json'
+        )
+
+        # cat1kw1 & cat1kw2 should be returned
+        expected_response_content = '''
+            [
+                {
+                    "id":%s,
+                    "name":"%s",
+                    "show_on_home_page":%s,
+                    "categories":[
+                        %s
+                    ]
+                },
+                {
+                    "id":%s,
+                    "name":"%s",
+                    "show_on_home_page":%s,
+                    "categories":[
+                        %s
+                    ]
+                }
+            ]
+        ''' % (self.cat1kw1.id, self.cat1kw1.name,
+               str(self.cat1kw1.show_on_home_page).lower(), self.category_1.id,
+               self.cat1kw2.id, self.cat1kw2.name,
+               str(self.cat1kw2.show_on_home_page).lower(), self.category_1.id)
+
+        self.assertJSONEqual(response.content, expected_response_content)
+
+        response = self.client.get(
+            '/api/keywords/',
+            {'category': self.category_2.name},
+            format='json'
+        )
+
+        # cat2kw1 & cat2kw2 should be returned
+        expected_response_content = '''
+            [
+                {
+                    "id":%s,
+                    "name":"%s",
+                    "show_on_home_page":%s,
+                    "categories":[
+                        %s
+                    ]
+                },
+                {
+                    "id":%s,
+                    "name":"%s",
+                    "show_on_home_page":%s,
+                    "categories":[
+                        %s
+                    ]
+                }
+            ]
+        ''' % (self.cat2kw1.id, self.cat2kw1.name,
+               str(self.cat2kw1.show_on_home_page).lower(), self.category_2.id,
+               self.cat2kw2.id, self.cat2kw2.name,
+               str(self.cat2kw2.show_on_home_page).lower(), self.category_2.id)
 
         self.assertJSONEqual(response.content, expected_response_content)
