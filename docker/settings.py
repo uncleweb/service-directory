@@ -25,7 +25,7 @@ DATABASES = {
 
 HAYSTACK_CONNECTIONS = {
     'default': {
-        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'ENGINE': 'service_directory.api.haystack_elasticsearch_raw_query.custom_elasticsearch.ConfigurableElasticSearchEngine',
         'URL': 'http://%s:9200' % environ.get('ES_HOST', '127.0.0.1'),
         'INDEX_NAME': 'haystack',
     },
