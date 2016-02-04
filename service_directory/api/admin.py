@@ -213,6 +213,18 @@ class OrganisationModelAdmin(ImportExportMixin, admin.OSMGeoAdmin):
     list_display = ('name', 'country')
     resource_class = OrganisationResource
 
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(OrganisationModelAdmin, self).get_form(
+            request, obj, **kwargs
+        )
+
+        # populate the location_coords field when editing
+        if obj:
+            form.declared_fields['location_coords'].initial = \
+                '{0}, {1}'.format(obj.location.y, obj.location.x)
+
+        return form
+
 
 class CategoryModelAdmin(ImportExportMixin, admin.ModelAdmin):
     list_display = ('name', 'show_on_home_page')

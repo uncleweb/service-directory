@@ -37,12 +37,20 @@ class OrganisationModelForm(forms.ModelForm):
     def clean(self):
         super(OrganisationModelForm, self).clean()
 
-        # if location_coords is a Point then we can ignore errors about
-        # location
-        if isinstance(self.cleaned_data.get('location_coords'), Point):
+        location_coords = self.cleaned_data.get('location_coords')
+
+        # only override location if location_coords is a valid Point and does
+        # not match the current location
+        if isinstance(location_coords, Point) and \
+                location_coords != self.instance.location:
+
             self.cleaned_data['location'] = self.cleaned_data.get(
                 'location_coords'
             )
 
+            # if location_coords is a valid Point then we can ignore errors
+            # about the location field (eg: 'Delete all Features' is used to
+            # remove the map marker but valid coordinates are entered into
+            # the location_coords field)
             if self.has_error('location'):
                 del self.errors['location']
