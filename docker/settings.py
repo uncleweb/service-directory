@@ -30,3 +30,6 @@ HAYSTACK_CONNECTIONS = {
         'INDEX_NAME': 'haystack',
     },
 }
+
+GOOGLE_ANALYTICS_TRACKING_ID = \
+    environ.get('GOOGLE_ANALYTICS_TRACKING_ID', 'please-change-me')

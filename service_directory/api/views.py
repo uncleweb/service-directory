@@ -1,5 +1,6 @@
 from django.contrib.gis.geos import Point
 from django.db.models.query import Prefetch
+from django.conf import settings
 from rest_framework.generics import RetrieveAPIView, ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -10,6 +11,8 @@ from service_directory.api.models import Service, Keyword, Category
 from service_directory.api.serializers import ServiceSerializer, \
     ServiceSummarySerializer, HomePageCategoryKeywordGroupingSerializer, \
     KeywordSerializer
+
+from UniversalAnalytics import Tracker
 
 
 class HomePageCategoryKeywordGrouping(APIView):
@@ -98,6 +101,10 @@ class ServiceLookup(APIView):
 
         if 'keyword' in request.query_params:
             keyword = request.query_params['keyword'].strip()
+
+        full_path = request._request.get_full_path()
+        tracker = Tracker.create(settings.GOOGLE_ANALYTICS_TRACKING_ID, client_id = 'SERVICE-DIRECTORY-API')
+        tracker.send('event', path=full_path, ec='Search', ea='Service Lookup', el=keyword)
 
         sqs = ConfigurableSearchQuerySet().models(Service)
 
