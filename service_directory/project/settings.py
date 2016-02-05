@@ -159,8 +159,7 @@ HAYSTACK_CONNECTIONS = {
 HAYSTACK_SIGNAL_PROCESSOR = 'service_directory.api.signal_processors.BatchingSignalProcessor'
 
 
-GOOGLE_ANALYTICS_TRACKING_ID = \
-    os.environ.get('GOOGLE_ANALYTICS_TRACKING_ID', 'please-change-me')
+GOOGLE_ANALYTICS_TRACKING_ID = os.environ.get('GOOGLE_ANALYTICS_TRACKING_ID', 'please-change-me')
 
 try:
     from secrets import *

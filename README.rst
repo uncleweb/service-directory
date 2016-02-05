@@ -3,6 +3,15 @@ service-directory
 
 A service directory of information.
 
+Prerequisites:
+
+* PostgreSQL with the following extensions:
+  - postgis [CREATE EXTENSION postgis;]
+    OSMGeoAdmin for the Organisation model, ordering by distance in haystack.
+  - citext  [CREATE EXTENSION citext;]
+    Case-insensitive text columns for things like category & keyword name.
+
+
 The following keys should be set in the django projects settings file (the values are only examples):
 
 GOOGLE_ANALYTICS_TRACKING_ID = 'UA-VALIDKEY'
