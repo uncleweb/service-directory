@@ -219,6 +219,66 @@ class ServiceLookupTestCase(TestCase):
         self.assertEqual('Constantiaberg Medi Clinic',
                          response.data[1]['organisation']['name'])
 
+    def test_fuzzy_matching(self):
+        # match on keyword and category name
+        response = self.client.get(
+            '/api/service_lookup/',
+            {
+                'keyword': 'testt'
+            },
+            format='json'
+        )
+
+        self.assertEqual(3, len(response.data))
+
+        # match on keyword name
+        response = self.client.get(
+            '/api/service_lookup/',
+            {
+                'keyword': 'aid'
+            },
+            format='json'
+        )
+
+        self.assertEqual(1, len(response.data))
+        self.assertEqual('Kingsbury Hospital Claremont',
+                         response.data[0]['organisation']['name'])
+
+        # match on category name
+        response = self.client.get(
+            '/api/service_lookup/',
+            {
+                'keyword': 'category'
+            },
+            format='json'
+        )
+
+        self.assertEqual(3, len(response.data))
+
+        # match on org name
+        response = self.client.get(
+            '/api/service_lookup/',
+            {
+                'keyword': 'med'
+            },
+            format='json'
+        )
+
+        self.assertEqual(1, len(response.data))
+        self.assertEqual('Constantiaberg Medi Clinic',
+                         response.data[0]['organisation']['name'])
+
+        # match on org name
+        response = self.client.get(
+            '/api/service_lookup/',
+            {
+                'keyword': 'hospice'
+            },
+            format='json'
+        )
+
+        self.assertEqual(2, len(response.data))
+
 
 class ServiceLookupWithoutDataTestCase(TestCase):
     client_class = APIClient
