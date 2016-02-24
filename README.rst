@@ -11,6 +11,9 @@ Prerequisites:
   - citext  [CREATE EXTENSION citext;]
     Case-insensitive text columns for things like category & keyword name.
 
+* Elasticsearch < 2.0
+  Version due to Haystack compatibility, see https://github.com/django-haystack/django-haystack/issues/1247
+
 
 The following keys should be set in the django projects settings file (the values are only examples):
 
