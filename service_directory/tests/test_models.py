@@ -1,7 +1,10 @@
+from datetime import datetime, timedelta
+
 from django.contrib.gis.geos import Point
 from django.test import TestCase
+from pytz import utc
 from service_directory.api.models import Country, Organisation, \
-    Category, Service, Keyword
+    Category, Service, Keyword, ServiceIncorrectInformationReport
 
 
 class CountryTestCase(TestCase):
@@ -153,3 +156,65 @@ class ServiceTestCase(TestCase):
 
         service.refresh_from_db()
         self.assertEqual('Child Friendly', service.verified_as)
+
+
+class ServiceIncorrectInformationReportTestCase(TestCase):
+    def setUp(self):
+        self.country = Country.objects.create(
+            name='South Africa',
+            iso_code='ZA'
+        )
+
+        self.category = Category.objects.create(name='Test Category')
+
+        self.keyword = Keyword.objects.create(name='test')
+        self.keyword.categories.add(self.category)
+
+        self.organisation = Organisation.objects.create(
+            name='Test Org',
+            country=self.country,
+            location=Point(18.505496, -33.891937, srid=4326)
+        )
+
+        self.service = Service.objects.create(
+            organisation=self.organisation
+        )
+
+        self.service.categories.add(self.category)
+        self.service.keywords.add(self.keyword)
+
+        ServiceIncorrectInformationReport.objects.create(
+            service=self.service,
+            contact_details=True
+        )
+
+    def test_query(self):
+        reports = ServiceIncorrectInformationReport.objects.filter(
+            service=self.service
+        )
+
+        self.assertEqual(1, len(reports))
+        self.assertTrue(reports[0].contact_details)
+        self.assertIsNone(reports[0].address)
+        self.assertIsNone(reports[0].trading_hours)
+        self.assertIsNone(reports[0].other)
+        self.assertEqual('', reports[0].other_detail)
+
+        self.assertAlmostEqual(
+            datetime.now(utc),
+            reports[0].reported_at,
+            delta=timedelta(seconds=10)
+        )
+
+    def test_update(self):
+        report = ServiceIncorrectInformationReport.objects.filter(
+            service=self.service
+        ).get()
+
+        report.other = True
+        report.other_detail = 'Test'
+        report.save()
+
+        report.refresh_from_db()
+        self.assertTrue(report.other)
+        self.assertEqual('Test', report.other_detail)

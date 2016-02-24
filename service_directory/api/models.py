@@ -84,6 +84,9 @@ class Service(models.Model):
     # might want separate min & max fields / DateTimeField or DurationField
     availability_hours = models.CharField(max_length=50, blank=True)
 
+    def __unicode__(self):
+        return unicode(self.id)
+
     def formatted_categories(self):
         categories = [
             category.__unicode__() for category in self.categories.all()
@@ -97,3 +100,19 @@ class Service(models.Model):
         ]
         return ', '.join(keywords)
     formatted_keywords.short_description = 'Keywords'
+
+
+class ServiceIncorrectInformationReport(models.Model):
+    service = models.ForeignKey(Service)
+
+    reported_at = models.DateTimeField(auto_now_add=True)
+
+    contact_details = models.NullBooleanField()
+    address = models.NullBooleanField()
+    trading_hours = models.NullBooleanField()
+
+    other = models.NullBooleanField()
+    other_detail = models.CharField(max_length=500, blank=True)
+
+    class Meta:
+        verbose_name_plural = 'Services - Incorrect Information Reports'
