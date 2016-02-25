@@ -63,11 +63,4 @@ class ServiceSummarySerializer(serializers.ModelSerializer):
 class ServiceIncorrectInformationReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceIncorrectInformationReport
-
-
-class ServiceIncorrectInformationReportRequestSerializer(
-        serializers.ModelSerializer):
-    class Meta:
-        model = ServiceIncorrectInformationReport
-        fields = ('contact_details', 'address', 'trading_hours',
-                  'other', 'other_detail')
+        read_only_fields = ('service',)

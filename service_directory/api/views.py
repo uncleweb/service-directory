@@ -2,6 +2,7 @@ from UniversalAnalytics import Tracker
 from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.db.models.query import Prefetch
+from django.http import Http404
 from rest_framework import status
 from rest_framework.generics import RetrieveAPIView, ListAPIView
 from rest_framework.response import Response
@@ -167,21 +168,25 @@ class ServiceReportIncorrectInformation(APIView):
     Report incorrect information for a service
     ---
     POST:
-         request_serializer: ServiceIncorrectInformationReportRequestSerializer
-         response_serializer: ServiceIncorrectInformationReportSerializer
+         serializer: ServiceIncorrectInformationReportSerializer
     """
     def post(self, request, *args, **kwargs):
         service_id = int(kwargs.pop('pk'))
 
-        request_data = request.POST.copy()
-        request_data['service'] = service_id
+        try:
+            service = Service.objects.get(id=service_id)
+        except Service.DoesNotExist:
+            raise Http404
 
-        serializer = ServiceIncorrectInformationReportSerializer(
-            data=request_data
+        request_serializer = ServiceIncorrectInformationReportSerializer(
+            data=request.data
         )
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if not request_serializer.is_valid():
+            return Response(request_serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        request_serializer.save(service=service)
+
+        return Response(request_serializer.data,
+                        status=status.HTTP_201_CREATED)
