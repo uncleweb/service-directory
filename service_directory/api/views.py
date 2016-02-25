@@ -1,18 +1,17 @@
+from UniversalAnalytics import Tracker
+from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.db.models.query import Prefetch
-from django.conf import settings
+from rest_framework import status
 from rest_framework.generics import RetrieveAPIView, ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from service_directory.api.haystack_elasticsearch_raw_query.\
     custom_elasticsearch import ConfigurableSearchQuerySet
 from service_directory.api.models import Service, Keyword, Category
-
 from service_directory.api.serializers import ServiceSerializer, \
     ServiceSummarySerializer, HomePageCategoryKeywordGroupingSerializer, \
-    KeywordSerializer
-
-from UniversalAnalytics import Tracker
+    KeywordSerializer, ServiceIncorrectInformationReportSerializer
 
 
 class HomePageCategoryKeywordGrouping(APIView):
@@ -161,3 +160,28 @@ class ServiceDetail(RetrieveAPIView):
     """
     queryset = Service.objects.all()
     serializer_class = ServiceSerializer
+
+
+class ServiceReportIncorrectInformation(APIView):
+    """
+    Report incorrect information for a service
+    ---
+    POST:
+         request_serializer: ServiceIncorrectInformationReportRequestSerializer
+         response_serializer: ServiceIncorrectInformationReportSerializer
+    """
+    def post(self, request, *args, **kwargs):
+        service_id = int(kwargs.pop('pk'))
+
+        request_data = request.POST.copy()
+        request_data['service'] = service_id
+
+        serializer = ServiceIncorrectInformationReportSerializer(
+            data=request_data
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
