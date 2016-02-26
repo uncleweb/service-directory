@@ -116,3 +116,23 @@ class ServiceIncorrectInformationReport(models.Model):
 
     class Meta:
         verbose_name_plural = 'Services - Incorrect Information Reports'
+
+
+class ServiceRating(models.Model):
+    POOR = 'poor'
+    AVERAGE = 'average'
+    GOOD = 'good'
+    RATING_CHOICES = (
+        (POOR, 'Poor'),
+        (AVERAGE, 'Average'),
+        (GOOD, 'Good')
+    )
+
+    service = models.ForeignKey(Service)
+
+    rated_at = models.DateTimeField(auto_now_add=True)
+
+    rating = models.CharField(max_length=10, choices=RATING_CHOICES)
+
+    class Meta:
+        verbose_name_plural = 'Services - Ratings'

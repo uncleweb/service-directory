@@ -4,7 +4,8 @@ from django.contrib.gis.geos import Point
 from django.test import TestCase
 from pytz import utc
 from service_directory.api.models import Country, Organisation, \
-    Category, Service, Keyword, ServiceIncorrectInformationReport
+    Category, Service, Keyword, ServiceIncorrectInformationReport, \
+    ServiceRating
 
 
 class CountryTestCase(TestCase):
@@ -218,3 +219,59 @@ class ServiceIncorrectInformationReportTestCase(TestCase):
         report.refresh_from_db()
         self.assertTrue(report.other)
         self.assertEqual('Test', report.other_detail)
+
+
+class ServiceRatingTestCase(TestCase):
+    def setUp(self):
+        self.country = Country.objects.create(
+            name='South Africa',
+            iso_code='ZA'
+        )
+
+        self.category = Category.objects.create(name='Test Category')
+
+        self.keyword = Keyword.objects.create(name='test')
+        self.keyword.categories.add(self.category)
+
+        self.organisation = Organisation.objects.create(
+            name='Test Org',
+            country=self.country,
+            location=Point(18.505496, -33.891937, srid=4326)
+        )
+
+        self.service = Service.objects.create(
+            organisation=self.organisation
+        )
+
+        self.service.categories.add(self.category)
+        self.service.keywords.add(self.keyword)
+
+        ServiceRating.objects.create(
+            service=self.service,
+            rating=ServiceRating.AVERAGE
+        )
+
+    def test_query(self):
+        ratings = ServiceRating.objects.filter(
+            service=self.service
+        )
+
+        self.assertEqual(1, len(ratings))
+        self.assertEqual(ServiceRating.AVERAGE, ratings[0].rating)
+
+        self.assertAlmostEqual(
+            datetime.now(utc),
+            ratings[0].rated_at,
+            delta=timedelta(seconds=10)
+        )
+
+    def test_update(self):
+        rating = ServiceRating.objects.filter(
+            service=self.service
+        ).get()
+
+        rating.rating = ServiceRating.GOOD
+        rating.save()
+
+        rating.refresh_from_db()
+        self.assertEqual(ServiceRating.GOOD, rating.rating)
