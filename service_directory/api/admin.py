@@ -1,7 +1,7 @@
 from django.contrib.gis import admin
 from import_export.admin import ImportExportMixin
 from models import Country, Organisation, Category, Service, Keyword, \
-    ServiceIncorrectInformationReport
+    ServiceIncorrectInformationReport, ServiceRating
 from service_directory.api.admin_import_export import CountryResource, \
     OrganisationResource, CategoryResource, KeywordResource, ServiceResource
 from service_directory.api.admin_model_forms import OrganisationModelForm
@@ -67,6 +67,25 @@ class ServiceIncorrectInformationReportModelAdmin(admin.ModelAdmin):
         return False
 
 
+class ServiceRatingModelAdmin(admin.ModelAdmin):
+    """
+    We disallow adding, modifying or deleting ServiceRating instances as these
+    should only be created through the API and not modified afterwards.
+    Currently this is the easiest way to have a 'read-only' model in admin.
+    """
+    actions = None
+
+    readonly_fields = ('service', 'rated_at', 'rating')
+
+    list_display = ('service', 'rated_at')
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 # Register your models here.
 admin.site.register(Country, CountryModelAdmin)
 admin.site.register(Organisation, OrganisationModelAdmin)
@@ -77,3 +96,4 @@ admin.site.register(
     ServiceIncorrectInformationReport,
     ServiceIncorrectInformationReportModelAdmin
 )
+admin.site.register(ServiceRating, ServiceRatingModelAdmin)
