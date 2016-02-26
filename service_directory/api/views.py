@@ -12,7 +12,8 @@ from service_directory.api.haystack_elasticsearch_raw_query.\
 from service_directory.api.models import Service, Keyword, Category
 from service_directory.api.serializers import ServiceSerializer, \
     ServiceSummarySerializer, HomePageCategoryKeywordGroupingSerializer, \
-    KeywordSerializer, ServiceIncorrectInformationReportSerializer
+    KeywordSerializer, ServiceIncorrectInformationReportSerializer, \
+    ServiceRatingSerializer
 
 
 class HomePageCategoryKeywordGrouping(APIView):
@@ -178,15 +179,44 @@ class ServiceReportIncorrectInformation(APIView):
         except Service.DoesNotExist:
             raise Http404
 
-        request_serializer = ServiceIncorrectInformationReportSerializer(
+        serializer = ServiceIncorrectInformationReportSerializer(
             data=request.data
         )
 
-        if not request_serializer.is_valid():
-            return Response(request_serializer.errors,
+        if not serializer.is_valid():
+            return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
 
-        request_serializer.save(service=service)
+        serializer.save(service=service)
 
-        return Response(request_serializer.data,
+        return Response(serializer.data,
+                        status=status.HTTP_201_CREATED)
+
+
+class ServiceRate(APIView):
+    """
+    Rate the quality of a service
+    ---
+    POST:
+         serializer: ServiceRatingSerializer
+    """
+    def post(self, request, *args, **kwargs):
+        service_id = int(kwargs.pop('pk'))
+
+        try:
+            service = Service.objects.get(id=service_id)
+        except Service.DoesNotExist:
+            raise Http404
+
+        serializer = ServiceRatingSerializer(
+            data=request.data
+        )
+
+        if not serializer.is_valid():
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save(service=service)
+
+        return Response(serializer.data,
                         status=status.HTTP_201_CREATED)

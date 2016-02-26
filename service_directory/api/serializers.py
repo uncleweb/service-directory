@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 from models import Service, Organisation, Category, Keyword, \
-    ServiceIncorrectInformationReport
+    ServiceIncorrectInformationReport, ServiceRating
 from rest_framework import serializers
 
 
@@ -63,4 +63,10 @@ class ServiceSummarySerializer(serializers.ModelSerializer):
 class ServiceIncorrectInformationReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceIncorrectInformationReport
+        read_only_fields = ('service',)
+
+
+class ServiceRatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceRating
         read_only_fields = ('service',)
