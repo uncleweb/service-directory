@@ -103,6 +103,9 @@ class Service(models.Model):
         return ', '.join(keywords)
     formatted_keywords.short_description = 'Keywords'
 
+    class Meta:
+        unique_together = ('name', 'organisation')
+
 
 class ServiceIncorrectInformationReport(models.Model):
     service = models.ForeignKey(Service)
