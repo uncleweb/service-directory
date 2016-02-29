@@ -1,3 +1,5 @@
+import logging
+
 from UniversalAnalytics import Tracker
 from django.conf import settings
 from django.contrib.gis.geos import Point
@@ -136,13 +138,19 @@ class ServiceLookup(APIView):
         # fetch all result objects and limit to 20 results
         sqs = sqs.load_all()[:20]
 
-        service_distance_tuples = [
-            (
-                result.object, result.distance if hasattr(result, 'distance')
-                else None
-            )
-            for result in sqs
-        ]
+        service_distance_tuples = []
+        try:
+            service_distance_tuples = [
+                (
+                    result.object,
+                    result.distance if hasattr(result, 'distance') else None
+                )
+                for result in sqs
+            ]
+        except AttributeError:
+            logging.warn('The ElasticSearch index is likely out of sync with'
+                         ' the database. You should run the `rebuild_index`'
+                         ' management command.')
 
         for service, distance in service_distance_tuples:
             if distance is not None:
