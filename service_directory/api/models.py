@@ -71,7 +71,7 @@ class Keyword(models.Model):
 
 
 class Service(models.Model):
-    name = models.CharField(max_length=50, default='Untitled')
+    name = models.CharField(max_length=50)
 
     categories = models.ManyToManyField(Category)
     keywords = models.ManyToManyField(Keyword)
