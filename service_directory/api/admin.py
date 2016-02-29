@@ -41,7 +41,7 @@ class KeywordModelAdmin(ImportExportMixin, admin.ModelAdmin):
 
 
 class ServiceModelAdmin(ImportExportMixin, admin.ModelAdmin):
-    list_display = ('organisation', 'formatted_categories',
+    list_display = ('name', 'organisation', 'formatted_categories',
                     'formatted_keywords')
     resource_class = ServiceResource
 
@@ -55,10 +55,11 @@ class ServiceIncorrectInformationReportModelAdmin(admin.ModelAdmin):
     """
     actions = None
 
-    readonly_fields = ('service', 'reported_at', 'contact_details',
-                       'address', 'trading_hours', 'other', 'other_detail')
+    readonly_fields = ('service', 'organisation', 'reported_at',
+                       'contact_details', 'address', 'trading_hours', 'other',
+                       'other_detail')
 
-    list_display = ('service', 'reported_at')
+    list_display = ('service', 'organisation', 'reported_at')
 
     def has_add_permission(self, request):
         return False
@@ -75,9 +76,9 @@ class ServiceRatingModelAdmin(admin.ModelAdmin):
     """
     actions = None
 
-    readonly_fields = ('service', 'rated_at', 'rating')
+    readonly_fields = ('service', 'organisation', 'rated_at', 'rating')
 
-    list_display = ('service', 'rated_at')
+    list_display = ('service', 'organisation', 'rated_at')
 
     def has_add_permission(self, request):
         return False
