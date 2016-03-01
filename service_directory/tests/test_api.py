@@ -197,16 +197,19 @@ class ServiceLookupTestCase(TestCase):
         # Kingsbury Hospital Claremont and then Constantiaberg Medi Clinic
         self.assertEqual(3, len(response.data))
 
+        self.assertEqual('Surgery', response.data[0]['name'])
         self.assertListEqual(['test', 'heart', 'transplant', 'trauma'],
                              response.data[0]['keywords'])
         self.assertEqual('Netcare Christiaan Barnard Memorial Hospital',
                          response.data[0]['organisation']['name'])
 
+        self.assertEqual('Free HIV Test', response.data[1]['name'])
         self.assertListEqual(['test', 'hiv', 'aids'],
                              response.data[1]['keywords'])
         self.assertEqual('Kingsbury Hospital Claremont',
                          response.data[1]['organisation']['name'])
 
+        self.assertEqual('A&E', response.data[2]['name'])
         self.assertListEqual(['test', 'trauma', 'accident'],
                              response.data[2]['keywords'])
         self.assertEqual('Constantiaberg Medi Clinic',
@@ -227,11 +230,13 @@ class ServiceLookupTestCase(TestCase):
         # Christiaan Barnard Memorial Hospital is closest
         self.assertEqual(2, len(response.data))
 
+        self.assertEqual('Surgery', response.data[0]['name'])
         self.assertListEqual(['test', 'heart', 'transplant', 'trauma'],
                              response.data[0]['keywords'])
         self.assertEqual('Netcare Christiaan Barnard Memorial Hospital',
                          response.data[0]['organisation']['name'])
 
+        self.assertEqual('A&E', response.data[1]['name'])
         self.assertListEqual(['test', 'trauma', 'accident'],
                              response.data[1]['keywords'])
         self.assertEqual('Constantiaberg Medi Clinic',
@@ -259,6 +264,7 @@ class ServiceLookupTestCase(TestCase):
         )
 
         self.assertEqual(1, len(response.data))
+        self.assertEqual('Free HIV Test', response.data[0]['name'])
         self.assertEqual('Kingsbury Hospital Claremont',
                          response.data[0]['organisation']['name'])
 
@@ -283,6 +289,7 @@ class ServiceLookupTestCase(TestCase):
         )
 
         self.assertEqual(1, len(response.data))
+        self.assertEqual('A&E', response.data[0]['name'])
         self.assertEqual('Constantiaberg Medi Clinic',
                          response.data[0]['organisation']['name'])
 

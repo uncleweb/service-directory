@@ -156,6 +156,7 @@ class ServiceTestCase(TestCase):
         services = Service.objects.filter(organisation=self.organisation)
 
         self.assertEqual(1, len(services))
+        self.assertEqual('Test Service', services[0].name)
         self.assertTrue('Test Category' in services[0].formatted_categories())
         self.assertTrue('test' in services[0].formatted_keywords())
 
