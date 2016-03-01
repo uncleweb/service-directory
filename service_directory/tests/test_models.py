@@ -10,10 +10,11 @@ from service_directory.api.models import Country, Organisation, \
 
 class CountryTestCase(TestCase):
     def setUp(self):
-        Country.objects.create(
+        country = Country.objects.create(
             name='South Africa',
             iso_code='ZA'
         )
+        country.full_clean()  # force model validation to happen
 
     def test_query(self):
         countries = Country.objects.filter(name='South Africa')
@@ -41,12 +42,14 @@ class OrganisationTestCase(TestCase):
             name='South Africa',
             iso_code='ZA'
         )
+        self.country.full_clean()  # force model validation to happen
 
-        Organisation.objects.create(
+        org = Organisation.objects.create(
             name='Test Org',
             country=self.country,
             location=Point(18.505496, -33.891937, srid=4326)
         )
+        org.full_clean()  # force model validation to happen
 
     def test_query(self):
         organisations = Organisation.objects.filter(name='Test Org')
@@ -70,7 +73,8 @@ class OrganisationTestCase(TestCase):
 
 class CategoryTestCase(TestCase):
     def setUp(self):
-        Category.objects.create(name='Test Category')
+        cat = Category.objects.create(name='Test Category')
+        cat.full_clean()  # force model validation to happen
 
     def test_query(self):
         categories = Category.objects.filter(name='Test Category')
@@ -95,9 +99,10 @@ class CategoryTestCase(TestCase):
 class KeywordTestCase(TestCase):
     def setUp(self):
         self.category = Category.objects.create(name='Test Category')
+        self.category.full_clean()  # force model validation to happen
 
         keyword = Keyword.objects.create(name='test')
-
+        keyword.full_clean()  # force model validation to happen
         keyword.categories.add(self.category)
 
     def test_query(self):
@@ -123,10 +128,13 @@ class ServiceTestCase(TestCase):
             name='South Africa',
             iso_code='ZA'
         )
+        self.country.full_clean()  # force model validation to happen
 
         self.category = Category.objects.create(name='Test Category')
+        self.category.full_clean()  # force model validation to happen
 
         self.keyword = Keyword.objects.create(name='test')
+        self.keyword.full_clean()  # force model validation to happen
         self.keyword.categories.add(self.category)
 
         self.organisation = Organisation.objects.create(
@@ -134,11 +142,13 @@ class ServiceTestCase(TestCase):
             country=self.country,
             location=Point(18.505496, -33.891937, srid=4326)
         )
+        self.organisation.full_clean()  # force model validation to happen
 
         service = Service.objects.create(
+            name='Test Service',
             organisation=self.organisation
         )
-
+        service.full_clean()  # force model validation to happen
         service.categories.add(self.category)
         service.keywords.add(self.keyword)
 
@@ -165,10 +175,13 @@ class ServiceIncorrectInformationReportTestCase(TestCase):
             name='South Africa',
             iso_code='ZA'
         )
+        self.country.full_clean()  # force model validation to happen
 
         self.category = Category.objects.create(name='Test Category')
+        self.category.full_clean()  # force model validation to happen
 
         self.keyword = Keyword.objects.create(name='test')
+        self.keyword.full_clean()  # force model validation to happen
         self.keyword.categories.add(self.category)
 
         self.organisation = Organisation.objects.create(
@@ -176,18 +189,21 @@ class ServiceIncorrectInformationReportTestCase(TestCase):
             country=self.country,
             location=Point(18.505496, -33.891937, srid=4326)
         )
+        self.organisation.full_clean()  # force model validation to happen
 
         self.service = Service.objects.create(
+            name='Test Service',
             organisation=self.organisation
         )
-
+        self.service.full_clean()  # force model validation to happen
         self.service.categories.add(self.category)
         self.service.keywords.add(self.keyword)
 
-        ServiceIncorrectInformationReport.objects.create(
+        report = ServiceIncorrectInformationReport.objects.create(
             service=self.service,
             contact_details=True
         )
+        report.full_clean()  # force model validation to happen
 
     def test_query(self):
         reports = ServiceIncorrectInformationReport.objects.filter(
@@ -227,10 +243,13 @@ class ServiceRatingTestCase(TestCase):
             name='South Africa',
             iso_code='ZA'
         )
+        self.country.full_clean()  # force model validation to happen
 
         self.category = Category.objects.create(name='Test Category')
+        self.category.full_clean()  # force model validation to happen
 
         self.keyword = Keyword.objects.create(name='test')
+        self.keyword.full_clean()  # force model validation to happen
         self.keyword.categories.add(self.category)
 
         self.organisation = Organisation.objects.create(
@@ -238,18 +257,21 @@ class ServiceRatingTestCase(TestCase):
             country=self.country,
             location=Point(18.505496, -33.891937, srid=4326)
         )
+        self.organisation.full_clean()  # force model validation to happen
 
         self.service = Service.objects.create(
+            name='Test Service',
             organisation=self.organisation
         )
-
+        self.service.full_clean()  # force model validation to happen
         self.service.categories.add(self.category)
         self.service.keywords.add(self.keyword)
 
-        ServiceRating.objects.create(
+        rating = ServiceRating.objects.create(
             service=self.service,
             rating=ServiceRating.AVERAGE
         )
+        rating.full_clean()  # force model validation to happen
 
     def test_query(self):
         ratings = ServiceRating.objects.filter(

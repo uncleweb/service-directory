@@ -18,12 +18,14 @@ class OrganisationModelFormTestCase(TestCase):
             name='South Africa',
             iso_code='ZA'
         )
+        cls.country.full_clean()  # force model validation to happen
 
         cls.org_cbmh = Organisation.objects.create(
             name='Netcare Christiaan Barnard Memorial Hospital',
             country=cls.country,
             location=Point(18.418231, -33.921859, srid=4326)
         )
+        cls.org_cbmh.full_clean()  # force model validation to happen
 
         cls.api_url = '/admin/api/organisation/{0}/'.format(cls.org_cbmh.id)
 

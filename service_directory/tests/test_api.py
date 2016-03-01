@@ -34,28 +34,37 @@ class ServiceLookupTestCase(TestCase):
             name='South Africa',
             iso_code='ZA'
         )
+        cls.country.full_clean()  # force model validation to happen
 
         cls.category = Category.objects.create(name='Test Category')
+        cls.category.full_clean()  # force model validation to happen
 
         cls.keyword_test = Keyword.objects.create(name='test')
+        cls.keyword_test.full_clean()  # force model validation to happen
         cls.keyword_test.categories.add(cls.category)
 
         cls.keyword_heart = Keyword.objects.create(name='heart')
+        cls.keyword_heart.full_clean()  # force model validation to happen
         cls.keyword_heart.categories.add(cls.category)
 
         cls.keyword_transplant = Keyword.objects.create(name='transplant')
+        cls.keyword_transplant.full_clean()  # force model validation to happen
         cls.keyword_transplant.categories.add(cls.category)
 
         cls.keyword_trauma = Keyword.objects.create(name='trauma')
+        cls.keyword_trauma.full_clean()  # force model validation to happen
         cls.keyword_trauma.categories.add(cls.category)
 
         cls.keyword_hiv = Keyword.objects.create(name='hiv')
+        cls.keyword_hiv.full_clean()  # force model validation to happen
         cls.keyword_hiv.categories.add(cls.category)
 
         cls.keyword_aids = Keyword.objects.create(name='aids')
+        cls.keyword_aids.full_clean()  # force model validation to happen
         cls.keyword_aids.categories.add(cls.category)
 
         cls.keyword_accident = Keyword.objects.create(name='accident')
+        cls.keyword_accident.full_clean()  # force model validation to happen
         cls.keyword_accident.categories.add(cls.category)
 
         cls.org_cbmh = Organisation.objects.create(
@@ -63,22 +72,27 @@ class ServiceLookupTestCase(TestCase):
             country=cls.country,
             location=Point(18.418231, -33.921859, srid=4326)
         )
+        cls.org_cbmh.full_clean()  # force model validation to happen
 
         cls.org_khc = Organisation.objects.create(
             name='Kingsbury Hospital Claremont',
             country=cls.country,
             location=Point(18.469060, -33.986375, srid=4326)
         )
+        cls.org_khc.full_clean()  # force model validation to happen
 
         cls.org_cmc = Organisation.objects.create(
             name='Constantiaberg Medi Clinic',
             country=cls.country,
             location=Point(18.461260, -34.026629, srid=4326)
         )
+        cls.org_cmc.full_clean()  # force model validation to happen
 
         test_service_1 = Service.objects.create(
+            name='Surgery',
             organisation=cls.org_cbmh
         )
+        test_service_1.full_clean()  # force model validation to happen
         test_service_1.categories.add(cls.category)
         test_service_1.keywords.add(
             cls.keyword_test, cls.keyword_heart, cls.keyword_transplant,
@@ -86,16 +100,20 @@ class ServiceLookupTestCase(TestCase):
         )
 
         test_service_2 = Service.objects.create(
+            name='Free HIV Test',
             organisation=cls.org_khc
         )
+        test_service_2.full_clean()  # force model validation to happen
         test_service_2.categories.add(cls.category)
         test_service_2.keywords.add(
             cls.keyword_test, cls.keyword_hiv, cls.keyword_aids
         )
 
         test_service_3 = Service.objects.create(
+            name='A&E',
             organisation=cls.org_cmc
         )
+        test_service_3.full_clean()  # force model validation to happen
         test_service_3.categories.add(cls.category)
         test_service_3.keywords.add(
             cls.keyword_test, cls.keyword_trauma, cls.keyword_accident
@@ -305,10 +323,13 @@ class ServiceDetailTestCase(TestCase):
             name='South Africa',
             iso_code='ZA'
         )
+        cls.country.full_clean()  # force model validation to happen
 
         cls.category = Category.objects.create(name='Test Category')
+        cls.category.full_clean()  # force model validation to happen
 
         cls.keyword = Keyword.objects.create(name='test')
+        cls.keyword.full_clean()  # force model validation to happen
         cls.keyword.categories.add(cls.category)
 
         cls.org = Organisation.objects.create(
@@ -316,10 +337,13 @@ class ServiceDetailTestCase(TestCase):
             country=cls.country,
             location=Point(18.505496, -33.891937, srid=4326)
         )
+        cls.org.full_clean()  # force model validation to happen
 
         cls.service = Service.objects.create(
+            name='Test Service',
             organisation=cls.org
         )
+        cls.service.full_clean()  # force model validation to happen
         cls.service.categories.add(cls.category)
         cls.service.keywords.add(cls.keyword)
 
@@ -332,6 +356,7 @@ class ServiceDetailTestCase(TestCase):
         expected_response_content = '''
             {
                 "id":%s,
+                "name":"%s",
                 "verified_as":"",
                 "age_range_min":null,
                 "age_range_max":null,
@@ -367,8 +392,9 @@ POINT (18.5054960000000008 -33.8919369999999986)",
                     }
                 ]
             }
-        ''' % (self.service.id, self.org.id, self.country.id, self.category.id,
-               self.keyword.id, self.category.id)
+        ''' % (self.service.id, self.service.name, self.org.id,
+               self.country.id, self.category.id, self.keyword.id,
+               self.category.id)
 
         self.assertJSONEqual(response.content, expected_response_content)
 
@@ -382,41 +408,49 @@ class HomePageCategoryKeywordGroupingTestCase(TestCase):
             name='Test Category 1',
             show_on_home_page=True
         )
+        cls.category_1.full_clean()  # force model validation to happen
         cls.category_2 = Category.objects.create(
             name='Test Category 2',
             show_on_home_page=True
         )
+        cls.category_2.full_clean()  # force model validation to happen
         cls.category_3 = Category.objects.create(
             name='Test Category 3',
             show_on_home_page=True
         )
+        cls.category_3.full_clean()  # force model validation to happen
         cls.category_4 = Category.objects.create(
             name='Test Category 4',
             show_on_home_page=False
         )
+        cls.category_4.full_clean()  # force model validation to happen
 
         cls.keyword_1 = Keyword.objects.create(
             name='test1',
             show_on_home_page=True
         )
+        cls.keyword_1.full_clean()  # force model validation to happen
         cls.keyword_1.categories.add(cls.category_1)
 
         cls.keyword_2 = Keyword.objects.create(
             name='test2',
             show_on_home_page=False
         )
+        cls.keyword_2.full_clean()  # force model validation to happen
         cls.keyword_2.categories.add(cls.category_2)
 
         cls.keyword_3 = Keyword.objects.create(
             name='test3',
             show_on_home_page=True
         )
+        cls.keyword_3.full_clean()  # force model validation to happen
         cls.keyword_3.categories.add(cls.category_3, cls.category_4)
 
         cls.keyword_4 = Keyword.objects.create(
             name='test4',
             show_on_home_page=True
         )
+        cls.keyword_4.full_clean()  # force model validation to happen
         cls.keyword_4.categories.add(cls.category_4)
 
     def test_get(self):
@@ -457,28 +491,34 @@ class KeywordListTestCase(TestCase):
         cls.category_1 = Category.objects.create(
             name='Test Category 1'
         )
+        cls.category_1.full_clean()  # force model validation to happen
         cls.category_2 = Category.objects.create(
             name='Test Category 2'
         )
+        cls.category_2.full_clean()  # force model validation to happen
 
         cls.cat1kw1 = Keyword.objects.create(
             name='cat1kw1'
         )
+        cls.cat1kw1.full_clean()  # force model validation to happen
         cls.cat1kw1.categories.add(cls.category_1)
 
         cls.cat1kw2 = Keyword.objects.create(
             name='cat1kw2'
         )
+        cls.cat1kw2.full_clean()  # force model validation to happen
         cls.cat1kw2.categories.add(cls.category_1)
 
         cls.cat2kw1 = Keyword.objects.create(
             name='cat2kw1'
         )
+        cls.cat2kw1.full_clean()  # force model validation to happen
         cls.cat2kw1.categories.add(cls.category_2)
 
         cls.cat2kw2 = Keyword.objects.create(
             name='cat2kw2'
         )
+        cls.cat2kw2.full_clean()  # force model validation to happen
         cls.cat2kw2.categories.add(cls.category_2)
 
     def test_get_without_params(self):
