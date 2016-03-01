@@ -1,8 +1,14 @@
+from datetime import datetime, timedelta
+
+import re
+from dateutil.parser import parse
+
 from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.test import TestCase
 from haystack import signal_processor
 from haystack.backends.elasticsearch_backend import ElasticsearchSearchBackend
+from pytz import utc
 from rest_framework.test import APIClient
 from service_directory.api.models import Country, Category, Organisation, \
     Service, Keyword
@@ -404,6 +410,144 @@ POINT (18.5054960000000008 -33.8919369999999986)",
                self.category.id)
 
         self.assertJSONEqual(response.content, expected_response_content)
+
+
+class ServiceReportIncorrectInformationTestCase(TestCase):
+    client_class = APIClient
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.country = Country.objects.create(
+            name='South Africa',
+            iso_code='ZA'
+        )
+        cls.country.full_clean()  # force model validation to happen
+
+        cls.org = Organisation.objects.create(
+            name='Test Organisation',
+            country=cls.country,
+            location=Point(18.505496, -33.891937, srid=4326)
+        )
+        cls.org.full_clean()  # force model validation to happen
+
+        cls.service = Service.objects.create(
+            name='Test Service',
+            organisation=cls.org
+        )
+        cls.service.full_clean()  # force model validation to happen
+
+    def test_post(self):
+        response = self.client.post(
+            '/api/service/{0}/report/'.format(self.service.id),
+            {
+                'contact_details': True
+            },
+            format='json'
+        )
+
+        pattern = re.compile(r'(\"reported_at\":)'
+                             r'\"(\d{4}-\d{2}-\d{2}T'
+                             r'\d{2}:\d{2}:\d{2}.\d{6}Z)\",')
+
+        reported_at_str = pattern.search(response.content).group(2)
+        reported_at = parse(reported_at_str)
+
+        # replace the reported_at value in the response content so that we can
+        # assertJSONEqual
+        modified_response_content = pattern.sub(r'\1"replaced",',
+                                                response.content)
+
+        # be aware that the returned ID may change if you add more test methods
+        # to this test case
+        expected_response_content = '''
+            {
+                "id":1,
+                "reported_at":"replaced",
+                "contact_details":true,
+                "address":null,
+                "trading_hours":null,
+                "other":null,
+                "other_detail":"",
+                "service":%s
+            }
+        ''' % (self.service.id,)
+
+        self.assertJSONEqual(modified_response_content,
+                             expected_response_content)
+
+        # assert reported_at separately
+        self.assertAlmostEqual(
+            datetime.now(utc),
+            reported_at,
+            delta=timedelta(seconds=10)
+        )
+
+
+class ServiceRateTestCase(TestCase):
+    client_class = APIClient
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.country = Country.objects.create(
+            name='South Africa',
+            iso_code='ZA'
+        )
+        cls.country.full_clean()  # force model validation to happen
+
+        cls.org = Organisation.objects.create(
+            name='Test Organisation',
+            country=cls.country,
+            location=Point(18.505496, -33.891937, srid=4326)
+        )
+        cls.org.full_clean()  # force model validation to happen
+
+        cls.service = Service.objects.create(
+            name='Test Service',
+            organisation=cls.org
+        )
+        cls.service.full_clean()  # force model validation to happen
+
+    def test_post(self):
+        response = self.client.post(
+            '/api/service/{0}/rate/'.format(self.service.id),
+            {
+                'rating': 'poor'
+            },
+            format='json'
+        )
+
+        pattern = re.compile(r'(\"rated_at\":)'
+                             r'\"(\d{4}-\d{2}-\d{2}T'
+                             r'\d{2}:\d{2}:\d{2}.\d{6}Z)\",')
+
+        rated_at_str = pattern.search(response.content).group(2)
+        rated_at = parse(rated_at_str)
+
+        # replace the rated_at value in the response content so that we can
+        # assertJSONEqual
+        modified_response_content = pattern.sub(r'\1"replaced",',
+                                                response.content)
+
+        # be aware that the returned ID may change if you add more test methods
+        # to this test case
+        expected_response_content = '''
+            {
+                "id":1,
+                "rated_at":"replaced",
+                "rating":"poor",
+                "service":%s
+            }
+        ''' % (self.service.id,)
+
+        self.assertJSONEqual(modified_response_content,
+                             expected_response_content)
+
+        # assert rated_at separately
+        self.assertAlmostEqual(
+            datetime.now(utc),
+            rated_at,
+            delta=timedelta(seconds=10)
+        )
 
 
 class HomePageCategoryKeywordGroupingTestCase(TestCase):
