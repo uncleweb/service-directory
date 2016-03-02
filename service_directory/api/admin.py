@@ -78,7 +78,7 @@ class ServiceRatingModelAdmin(admin.ModelAdmin):
 
     readonly_fields = ('service', 'organisation', 'rated_at', 'rating')
 
-    list_display = ('service', 'organisation', 'rated_at')
+    list_display = ('service', 'organisation', 'rating', 'rated_at')
 
     def has_add_permission(self, request):
         return False
