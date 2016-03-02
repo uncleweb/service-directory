@@ -105,7 +105,6 @@ class ServiceLookup(APIView):
         if 'keyword' in request.query_params:
             keyword = request.query_params['keyword'].strip()
 
-        full_path = request._request.get_full_path()
         tracker = Tracker.create(
             settings.GOOGLE_ANALYTICS_TRACKING_ID,
             client_id='SERVICE-DIRECTORY-API'
@@ -113,7 +112,7 @@ class ServiceLookup(APIView):
 
         tracker.send(
             'event',
-            path=full_path,
+            path=request._request.path,
             ec='Search',
             ea='Service Lookup',
             el=keyword
