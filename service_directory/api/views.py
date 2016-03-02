@@ -18,6 +18,25 @@ from service_directory.api.serializers import ServiceSerializer, \
     ServiceRatingSerializer
 
 
+google_analytics_tracker = Tracker.create(
+    settings.GOOGLE_ANALYTICS_TRACKING_ID,
+    client_id='SERVICE-DIRECTORY-API'
+)
+
+
+def send_ga_tracking_event(path, category, action, label):
+    try:
+        google_analytics_tracker.send(
+            'event',
+            path=path,
+            ec=category,
+            ea=action,
+            el=label
+        )
+    except:
+        logging.warn("Google Analytics call failed", exc_info=True)
+
+
 class HomePageCategoryKeywordGrouping(APIView):
     """
     Retrieve keywords grouped by category for the home page
@@ -105,17 +124,8 @@ class ServiceLookup(APIView):
         if 'keyword' in request.query_params:
             keyword = request.query_params['keyword'].strip()
 
-        tracker = Tracker.create(
-            settings.GOOGLE_ANALYTICS_TRACKING_ID,
-            client_id='SERVICE-DIRECTORY-API'
-        )
-
-        tracker.send(
-            'event',
-            path=request._request.path,
-            ec='Search',
-            ea='Service Lookup',
-            el=keyword
+        send_ga_tracking_event(
+            request._request.path, 'Search', 'Service Lookup', keyword
         )
 
         sqs = ConfigurableSearchQuerySet().models(Service)
@@ -169,6 +179,24 @@ class ServiceDetail(RetrieveAPIView):
     """
     queryset = Service.objects.all()
     serializer_class = ServiceSerializer
+
+    def get(self, request, *args, **kwargs):
+        response = super(ServiceDetail, self).get(request, *args, **kwargs)
+
+        if response and response.data:
+            try:
+                service_name = response.data['name']
+                organisation_name = response.data['organisation']['name']
+                label = '{0} ({1})'.format(service_name, organisation_name)
+
+                send_ga_tracking_event(
+                    request._request.path, 'View', 'Service', label
+                )
+            except (KeyError, TypeError):
+                logging.warn("Did not find expected data in response",
+                             exc_info=True)
+
+        return response
 
 
 class ServiceReportIncorrectInformation(APIView):
