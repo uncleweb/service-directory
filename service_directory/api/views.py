@@ -92,6 +92,16 @@ class KeywordList(ListAPIView):
         if category_list:
             queryset = queryset.filter(categories__name__in=category_list)
 
+            if queryset:
+                # although this endpoint accepts a list of categories we only
+                # send a tracking event for the first one as generally only one
+                # will be supplied (and we don't want to block the response
+                # because of a large number of tracking calls)
+                send_ga_tracking_event(
+                    self.request._request.path, 'View', 'KeywordsInCategory',
+                    category_list[0]
+                )
+
         return queryset
 
 
