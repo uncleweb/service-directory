@@ -289,6 +289,9 @@ class ServiceSendSMS(APIView):
             settings.VUMI_GO_API_TOKEN,
             api_url=settings.VUMI_GO_API_URL)
 
-        sender.send_text(request.data['cell_number'], request.data['service_url'])
+        sender.send_text(
+            request.data['cell_number'],
+            request.data['service_url']
+        )
 
         return Response({'result': 'ok'}, status=status.HTTP_200_OK)
