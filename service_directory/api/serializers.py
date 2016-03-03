@@ -40,7 +40,7 @@ class ServiceSummarySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Service
-        fields = ('id', 'keywords', 'organisation', 'distance')
+        fields = ('id', 'name', 'keywords', 'organisation', 'distance')
 
     # Note: Strictly speaking nothing above this comment is required for the
     # serializer to work, however it helps Swagger to work out what the
@@ -50,6 +50,7 @@ class ServiceSummarySerializer(serializers.ModelSerializer):
         d = OrderedDict()
 
         d['id'] = instance.id
+        d['name'] = instance.name
         d['keywords'] = [keyword.name for keyword in instance.keywords.all()]
         d['organisation'] = OrganisationSummarySerializer(
             instance.organisation

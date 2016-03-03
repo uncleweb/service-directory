@@ -71,6 +71,8 @@ class Keyword(models.Model):
 
 
 class Service(models.Model):
+    name = models.CharField(max_length=50)
+
     categories = models.ManyToManyField(Category)
     keywords = models.ManyToManyField(Keyword)
 
@@ -85,7 +87,7 @@ class Service(models.Model):
     availability_hours = models.CharField(max_length=50, blank=True)
 
     def __unicode__(self):
-        return unicode(self.id)
+        return self.name
 
     def formatted_categories(self):
         categories = [
@@ -101,6 +103,9 @@ class Service(models.Model):
         return ', '.join(keywords)
     formatted_keywords.short_description = 'Keywords'
 
+    class Meta:
+        unique_together = ('name', 'organisation')
+
 
 class ServiceIncorrectInformationReport(models.Model):
     service = models.ForeignKey(Service)
@@ -113,6 +118,10 @@ class ServiceIncorrectInformationReport(models.Model):
 
     other = models.NullBooleanField()
     other_detail = models.CharField(max_length=500, blank=True)
+
+    def organisation(self):
+        return self.service.organisation.name
+    organisation.admin_order_field = 'service__organisation'
 
     class Meta:
         verbose_name_plural = 'Services - Incorrect Information Reports'
@@ -133,6 +142,10 @@ class ServiceRating(models.Model):
     rated_at = models.DateTimeField(auto_now_add=True)
 
     rating = models.CharField(max_length=10, choices=RATING_CHOICES)
+
+    def organisation(self):
+        return self.service.organisation.name
+    organisation.admin_order_field = 'service__organisation'
 
     class Meta:
         verbose_name_plural = 'Services - Ratings'

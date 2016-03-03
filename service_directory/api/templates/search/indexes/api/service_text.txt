@@ -1,1 +1,1 @@
-{% for keyword in object.keywords.all %}{{ keyword.name }} {% endfor %}{% for category in object.categories.all %}{{ category.name }} {% endfor %}{{ object.organisation.name }}
+{{object.name}} {% for keyword in object.keywords.all %}{{ keyword.name }} {% endfor %}{% for category in object.categories.all %}{{ category.name }} {% endfor %}{{ object.organisation.name }}
