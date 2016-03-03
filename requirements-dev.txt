@@ -19,3 +19,5 @@ geopy==1.11.0
 raven==5.0.0
 
 universal-analytics-python==0.2.4
+
+go_http==0.2.6
