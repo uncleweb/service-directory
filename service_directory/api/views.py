@@ -234,6 +234,12 @@ class ServiceReportIncorrectInformation(APIView):
 
         serializer.save(service=service)
 
+        label = '{0} ({1})'.format(service.name, service.organisation.name)
+        send_ga_tracking_event(
+            request._request.path, 'Feedback',
+            'ServiceIncorrectInformationReport', label
+        )
+
         return Response(serializer.data,
                         status=status.HTTP_201_CREATED)
 
@@ -262,6 +268,12 @@ class ServiceRate(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
         serializer.save(service=service)
+
+        label = '{0} ({1})'.format(service.name, service.organisation.name)
+        send_ga_tracking_event(
+            request._request.path, 'Feedback',
+            'ServiceRating', label
+        )
 
         return Response(serializer.data,
                         status=status.HTTP_201_CREATED)
