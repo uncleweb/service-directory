@@ -193,8 +193,8 @@ class ServiceDetail(RetrieveAPIView):
                     request._request.path, 'View', 'Service', label
                 )
             except (KeyError, TypeError):
-                logging.warn("Did not find expected data in response",
-                             exc_info=True)
+                logging.warn("Did not find expected data in response to make"
+                             " Google Analytics call", exc_info=True)
 
         return response
 
