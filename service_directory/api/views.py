@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.db.models.query import Prefetch
 from django.http import Http404
+from go_http import HttpApiSender
 from rest_framework import status
 from rest_framework.generics import RetrieveAPIView, ListAPIView
 from rest_framework.response import Response
@@ -228,3 +229,17 @@ class ServiceRate(APIView):
 
         return Response(serializer.data,
                         status=status.HTTP_201_CREATED)
+
+
+class ServiceSendSMS(APIView):
+    def post(self, request, *args, **kwargs):
+
+        sender = HttpApiSender(
+            settings.VUMI_GO_ACCOUNT_KEY,
+            settings.VUMI_GO_CONVERSATION_KEY,
+            settings.VUMI_GO_API_TOKEN,
+            api_url=settings.VUMI_GO_API_URL)
+
+        sender.send_text(request.data['cell_number'], request.data['service_url'])
+
+        return Response({'result': 'ok'}, status=status.HTTP_200_OK)
