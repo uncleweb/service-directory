@@ -5,7 +5,7 @@ from import_export import fields as import_export_fields
 from import_export import resources
 from import_export.widgets import ManyToManyWidget, ForeignKeyWidget, Widget
 from service_directory.api.models import Category, Keyword, Country, \
-    Organisation, Service
+    Organisation, Service, ServiceRating, ServiceIncorrectInformationReport
 
 
 class PointWidget(Widget):
@@ -197,3 +197,38 @@ class ServiceResource(resources.ModelResource):
 
     class Meta:
         model = Service
+
+
+class ServiceIncorrectInformationReportResource(resources.ModelResource):
+    service = import_export_fields.Field(
+        attribute='service__name', column_name='service'
+    )
+
+    organisation = import_export_fields.Field(
+        attribute='service__organisation__name', column_name='organisation'
+    )
+
+    class Meta:
+        model = ServiceIncorrectInformationReport
+
+        fields = ('service', 'organisation', 'contact_details', 'address',
+                  'trading_hours', 'other', 'other_detail', 'reported_at')
+
+        export_order = ('service', 'organisation', 'contact_details',
+                        'address', 'trading_hours', 'other', 'other_detail',
+                        'reported_at')
+
+
+class ServiceRatingResource(resources.ModelResource):
+    service = import_export_fields.Field(
+        attribute='service__name', column_name='service'
+    )
+
+    organisation = import_export_fields.Field(
+        attribute='service__organisation__name', column_name='organisation'
+    )
+
+    class Meta:
+        model = ServiceRating
+        fields = ('service', 'organisation', 'rating', 'rated_at')
+        export_order = ('service', 'organisation', 'rating', 'rated_at')

@@ -1,9 +1,10 @@
 from django.contrib.gis import admin
-from import_export.admin import ImportExportMixin
+from import_export.admin import ImportExportMixin, ExportMixin
 from models import Country, Organisation, Category, Service, Keyword, \
     ServiceIncorrectInformationReport, ServiceRating
 from service_directory.api.admin_import_export import CountryResource, \
-    OrganisationResource, CategoryResource, KeywordResource, ServiceResource
+    OrganisationResource, CategoryResource, KeywordResource, ServiceResource, \
+    ServiceRatingResource, ServiceIncorrectInformationReportResource
 from service_directory.api.admin_model_forms import OrganisationModelForm
 
 
@@ -46,7 +47,8 @@ class ServiceModelAdmin(ImportExportMixin, admin.ModelAdmin):
     resource_class = ServiceResource
 
 
-class ServiceIncorrectInformationReportModelAdmin(admin.ModelAdmin):
+class ServiceIncorrectInformationReportModelAdmin(ExportMixin,
+                                                  admin.ModelAdmin):
     """
     We disallow adding, modifying or deleting ServiceIncorrectInformationReport
     instances as these should only be created through the API and not modified
@@ -61,6 +63,8 @@ class ServiceIncorrectInformationReportModelAdmin(admin.ModelAdmin):
 
     list_display = ('service', 'organisation', 'reported_at')
 
+    resource_class = ServiceIncorrectInformationReportResource
+
     def has_add_permission(self, request):
         return False
 
@@ -68,7 +72,7 @@ class ServiceIncorrectInformationReportModelAdmin(admin.ModelAdmin):
         return False
 
 
-class ServiceRatingModelAdmin(admin.ModelAdmin):
+class ServiceRatingModelAdmin(ExportMixin, admin.ModelAdmin):
     """
     We disallow adding, modifying or deleting ServiceRating instances as these
     should only be created through the API and not modified afterwards.
@@ -79,6 +83,8 @@ class ServiceRatingModelAdmin(admin.ModelAdmin):
     readonly_fields = ('service', 'organisation', 'rated_at', 'rating')
 
     list_display = ('service', 'organisation', 'rating', 'rated_at')
+
+    resource_class = ServiceRatingResource
 
     def has_add_permission(self, request):
         return False
