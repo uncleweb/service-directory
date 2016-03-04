@@ -237,10 +237,7 @@ class ServiceReportIncorrectInformation(APIView):
             data=request.data
         )
 
-        if not serializer.is_valid():
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
-
+        serializer.is_valid(raise_exception=True)
         serializer.save(service=service)
 
         label = '{0} ({1})'.format(service.name, service.organisation.name)
@@ -272,10 +269,7 @@ class ServiceRate(APIView):
             data=request.data
         )
 
-        if not serializer.is_valid():
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
-
+        serializer.is_valid(raise_exception=True)
         serializer.save(service=service)
 
         label = '{0} ({1})'.format(service.name, service.organisation.name)
@@ -323,7 +317,5 @@ class ServiceSendSMS(APIView):
                 data={'result': False}
             )
 
-        response_serializer.is_valid(raise_exception=True)
-
-        return Response(response_serializer.validated_data,
+        return Response(response_serializer.data,
                         status=status.HTTP_200_OK)
