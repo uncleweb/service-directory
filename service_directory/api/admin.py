@@ -63,6 +63,8 @@ class ServiceIncorrectInformationReportModelAdmin(ExportMixin,
 
     list_display = ('service', 'organisation', 'reported_at')
 
+    list_filter = ('service', 'service__organisation', 'reported_at')
+
     resource_class = ServiceIncorrectInformationReportResource
 
     def has_add_permission(self, request):
@@ -83,6 +85,8 @@ class ServiceRatingModelAdmin(ExportMixin, admin.ModelAdmin):
     readonly_fields = ('service', 'organisation', 'rated_at', 'rating')
 
     list_display = ('service', 'organisation', 'rating', 'rated_at')
+
+    list_filter = ('service', 'service__organisation', 'rating', 'rated_at')
 
     resource_class = ServiceRatingResource
 
