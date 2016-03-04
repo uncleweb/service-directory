@@ -161,6 +161,11 @@ HAYSTACK_SIGNAL_PROCESSOR = 'service_directory.api.signal_processors.BatchingSig
 
 GOOGLE_ANALYTICS_TRACKING_ID = os.environ.get('GOOGLE_ANALYTICS_TRACKING_ID', 'please-change-me')
 
+VUMI_GO_ACCOUNT_KEY = os.environ.get('VUMI_GO_ACCOUNT_KEY', 'please-change-me')
+VUMI_GO_CONVERSATION_KEY = os.environ.get('VUMI_GO_CONVERSATION_KEY', 'please-change-me')
+VUMI_GO_API_TOKEN = os.environ.get('VUMI_GO_API_TOKEN', 'please-change-me')
+VUMI_GO_API_URL = os.environ.get('VUMI_GO_API_URL', 'please-change-me')
+
 try:
     from secrets import *
 except ImportError:
