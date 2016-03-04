@@ -74,6 +74,8 @@ class ServiceRatingSerializer(serializers.ModelSerializer):
 
 
 class ServiceSendSMSRequestSerializer(serializers.Serializer):
+    # TODO: add validation for cell_number field
+    # http://www.django-rest-framework.org/api-guide/serializers/#validation
     cell_number = serializers.CharField()
     service_url = serializers.URLField()
 
