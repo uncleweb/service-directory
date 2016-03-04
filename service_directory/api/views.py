@@ -16,8 +16,8 @@ from service_directory.api.models import Service, Keyword, Category
 from service_directory.api.serializers import ServiceSerializer, \
     ServiceSummarySerializer, HomePageCategoryKeywordGroupingSerializer, \
     KeywordSerializer, ServiceIncorrectInformationReportSerializer, \
-    ServiceRatingSerializer
-
+    ServiceRatingSerializer, ServiceSendSMSRequestSerializer, \
+    ServiceSendSMSResponseSerializer
 
 google_analytics_tracker = Tracker.create(
     settings.GOOGLE_ANALYTICS_TRACKING_ID,
@@ -289,17 +289,41 @@ class ServiceRate(APIView):
 
 
 class ServiceSendSMS(APIView):
+    """
+    Send an SMS to a supplied cell_number with a supplied service_url
+    ---
+    POST:
+         request_serializer: ServiceSendSMSRequestSerializer
+         response_serializer: ServiceSendSMSResponseSerializer
+    """
     def post(self, request, *args, **kwargs):
+        request_serializer = ServiceSendSMSRequestSerializer(data=request.data)
 
-        sender = HttpApiSender(
-            settings.VUMI_GO_ACCOUNT_KEY,
-            settings.VUMI_GO_CONVERSATION_KEY,
-            settings.VUMI_GO_API_TOKEN,
-            api_url=settings.VUMI_GO_API_URL)
+        request_serializer.is_valid(raise_exception=True)
 
-        sender.send_text(
-            request.data['cell_number'],
-            request.data['service_url']
-        )
+        try:
+            sender = HttpApiSender(
+                settings.VUMI_GO_ACCOUNT_KEY,
+                settings.VUMI_GO_CONVERSATION_KEY,
+                settings.VUMI_GO_API_TOKEN,
+                api_url=settings.VUMI_GO_API_URL
+            )
 
-        return Response({'result': 'ok'}, status=status.HTTP_200_OK)
+            sender.send_text(
+                request_serializer.validated_data['cell_number'],
+                request_serializer.validated_data['service_url']
+            )
+
+            response_serializer = ServiceSendSMSResponseSerializer(
+                data={'result': True}
+            )
+        except:
+            logging.error("Failed to send SMS", exc_info=True)
+            response_serializer = ServiceSendSMSResponseSerializer(
+                data={'result': False}
+            )
+
+        response_serializer.is_valid(raise_exception=True)
+
+        return Response(response_serializer.validated_data,
+                        status=status.HTTP_200_OK)

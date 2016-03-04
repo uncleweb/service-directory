@@ -71,3 +71,12 @@ class ServiceRatingSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceRating
         read_only_fields = ('service',)
+
+
+class ServiceSendSMSRequestSerializer(serializers.Serializer):
+    cell_number = serializers.CharField()
+    service_url = serializers.URLField()
+
+
+class ServiceSendSMSResponseSerializer(serializers.Serializer):
+    result = serializers.BooleanField()
