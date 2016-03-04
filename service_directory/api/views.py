@@ -119,11 +119,19 @@ class ServiceLookup(APIView):
               description: latitude,longitude
               type: string
               paramType: query
+            - name: place_name
+              description: only used for analytics purposes
+              type: string
+              paramType: query
         response_serializer: ServiceSummarySerializer
     """
     def get(self, request):
-        point = None
         keyword = None
+        point = None
+        place_name = None
+
+        if 'keyword' in request.query_params:
+            keyword = request.query_params['keyword'].strip()
 
         if 'near' in request.query_params:
             latlng = request.query_params['near'].strip()
@@ -132,11 +140,11 @@ class ServiceLookup(APIView):
             lng = float(lng)
             point = Point(lng, lat, srid=4326)
 
-        if 'keyword' in request.query_params:
-            keyword = request.query_params['keyword'].strip()
+        if 'place_name' in request.query_params:
+            place_name = request.query_params['place_name'].strip()
 
         send_ga_tracking_event(
-            request._request.path, 'Search', 'Service Lookup', keyword
+            request._request.path, 'Search', keyword or '', place_name or ''
         )
 
         sqs = ConfigurableSearchQuerySet().models(Service)
