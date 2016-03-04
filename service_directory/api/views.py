@@ -295,6 +295,8 @@ class ServiceSendSMS(APIView):
 
         request_serializer.is_valid(raise_exception=True)
 
+        analytics_label = ''
+
         try:
             sender = HttpApiSender(
                 settings.VUMI_GO_ACCOUNT_KEY,
@@ -308,10 +310,12 @@ class ServiceSendSMS(APIView):
                     request_serializer.validated_data['your_name'],
                     request_serializer.validated_data['service_url']
                 )
+                analytics_label = 'send'
             else:
                 message = 'You have sent yourself a link: {0}'.format(
                     request_serializer.validated_data['service_url']
                 )
+                analytics_label = 'save'
 
             sender.send_text(
                 request_serializer.validated_data['cell_number'],
@@ -326,6 +330,13 @@ class ServiceSendSMS(APIView):
             response_serializer = ServiceSendSMSResponseSerializer(
                 data={'result': False}
             )
+
+        send_ga_tracking_event(
+            request._request.path,
+            'SMS',
+            request_serializer.validated_data['service_url'],
+            analytics_label
+        )
 
         response_serializer.is_valid(raise_exception=True)
 
