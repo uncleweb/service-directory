@@ -303,10 +303,15 @@ class ServiceSendSMS(APIView):
                 api_url=settings.VUMI_GO_API_URL
             )
 
-            if 'your_name' in request.data:
-                message = '{0} has sent you a link: {1}'.format(request.data['your_name'], request.data['service_url'])
+            if 'your_name' in request_serializer.validated_data:
+                message = '{0} has sent you a link: {1}'.format(
+                    request_serializer.validated_data['your_name'],
+                    request_serializer.validated_data['service_url']
+                )
             else:
-                message = 'You have sent yourself a link: {0}'.format(request.data['service_url'])
+                message = 'You have sent yourself a link: {0}'.format(
+                    request_serializer.validated_data['service_url']
+                )
 
             sender.send_text(
                 request_serializer.validated_data['cell_number'],
@@ -321,6 +326,8 @@ class ServiceSendSMS(APIView):
             response_serializer = ServiceSendSMSResponseSerializer(
                 data={'result': False}
             )
+
+        response_serializer.is_valid(raise_exception=True)
 
         return Response(response_serializer.data,
                         status=status.HTTP_200_OK)

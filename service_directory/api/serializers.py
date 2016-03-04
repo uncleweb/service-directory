@@ -78,6 +78,7 @@ class ServiceSendSMSRequestSerializer(serializers.Serializer):
     # http://www.django-rest-framework.org/api-guide/serializers/#validation
     cell_number = serializers.CharField()
     service_url = serializers.URLField()
+    your_name = serializers.CharField(required=False)
 
 
 class ServiceSendSMSResponseSerializer(serializers.Serializer):
