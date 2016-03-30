@@ -25,26 +25,8 @@ class Country(models.Model):
         verbose_name_plural = 'countries'
 
 
-class Organisation(models.Model):
-    name = models.CharField(max_length=100)
-    about = models.CharField(max_length=500, blank=True)
-
-    address = models.CharField(max_length=500, blank=True)
-    telephone = models.CharField(max_length=50, blank=True)
-    email = models.EmailField(blank=True)
-    web = models.URLField(blank=True)
-
-    country = models.ForeignKey(Country, on_delete=models.PROTECT)
-
-    location = PointField(srid=4326)
-
-    def __unicode__(self):
-        return self.name
-
-
 class Category(models.Model):
     name = CaseInsensitiveTextField(max_length=50, unique=True)
-
     show_on_home_page = models.BooleanField(default=False)
 
     def __unicode__(self):
@@ -70,13 +52,15 @@ class Keyword(models.Model):
     formatted_categories.short_description = 'Categories'
 
 
-class Service(models.Model):
-    name = models.CharField(max_length=50)
+class Organisation(models.Model):
+    name = models.CharField(max_length=100)
 
-    categories = models.ManyToManyField(Category)
-    keywords = models.ManyToManyField(Keyword)
+    about = models.CharField(max_length=500, blank=True)
 
-    organisation = models.ForeignKey(Organisation)
+    address = models.CharField(max_length=500, blank=True)
+    telephone = models.CharField(max_length=50, blank=True)
+    email = models.EmailField(blank=True)
+    web = models.URLField(blank=True)
 
     verified_as = models.CharField(max_length=100, blank=True)
 
@@ -84,7 +68,14 @@ class Service(models.Model):
     age_range_max = models.PositiveSmallIntegerField(blank=True, null=True)
 
     # might want separate min & max fields / DateTimeField or DurationField
-    availability_hours = models.CharField(max_length=50, blank=True)
+    opening_hours = models.CharField(max_length=50, blank=True)
+
+    country = models.ForeignKey(Country, on_delete=models.PROTECT)
+
+    location = PointField(srid=4326)
+
+    categories = models.ManyToManyField(Category)
+    keywords = models.ManyToManyField(Keyword)
 
     def __unicode__(self):
         return self.name
@@ -103,12 +94,9 @@ class Service(models.Model):
         return ', '.join(keywords)
     formatted_keywords.short_description = 'Keywords'
 
-    class Meta:
-        unique_together = ('name', 'organisation')
 
-
-class ServiceIncorrectInformationReport(models.Model):
-    service = models.ForeignKey(Service)
+class OrganisationIncorrectInformationReport(models.Model):
+    organisation = models.ForeignKey(Organisation)
 
     reported_at = models.DateTimeField(auto_now_add=True)
 
@@ -119,15 +107,11 @@ class ServiceIncorrectInformationReport(models.Model):
     other = models.NullBooleanField()
     other_detail = models.CharField(max_length=500, blank=True)
 
-    def organisation(self):
-        return self.service.organisation.name
-    organisation.admin_order_field = 'service__organisation'
-
     class Meta:
-        verbose_name_plural = 'Services - Incorrect Information Reports'
+        verbose_name_plural = 'Organisations - Incorrect Information Reports'
 
 
-class ServiceRating(models.Model):
+class OrganisationRating(models.Model):
     POOR = 'poor'
     AVERAGE = 'average'
     GOOD = 'good'
@@ -137,15 +121,11 @@ class ServiceRating(models.Model):
         (GOOD, 'Good')
     )
 
-    service = models.ForeignKey(Service)
+    organisation = models.ForeignKey(Organisation)
 
     rated_at = models.DateTimeField(auto_now_add=True)
 
     rating = models.CharField(max_length=10, choices=RATING_CHOICES)
 
-    def organisation(self):
-        return self.service.organisation.name
-    organisation.admin_order_field = 'service__organisation'
-
     class Meta:
-        verbose_name_plural = 'Services - Ratings'
+        verbose_name_plural = 'Organisations - Ratings'
