@@ -5,7 +5,7 @@ from import_export import fields as import_export_fields
 from import_export import resources
 from import_export.widgets import ManyToManyWidget, ForeignKeyWidget, Widget
 from service_directory.api.models import Category, Keyword, Country, \
-    Organisation, Service, ServiceRating, ServiceIncorrectInformationReport
+    Organisation, OrganisationIncorrectInformationReport, OrganisationRating
 
 
 class PointWidget(Widget):
@@ -25,6 +25,13 @@ class PointWidget(Widget):
 
     def render(self, value):
         return force_text('{0},{1}'.format(value.y, value.x))
+
+
+class CountryResource(resources.ModelResource):
+    class Meta:
+        model = Country
+        import_id_fields = ('name',)
+        fields = ('name', 'iso_code',)
 
 
 class CategoryResource(resources.ModelResource):
@@ -75,15 +82,9 @@ class KeywordResource(resources.ModelResource):
         fields = ('name', 'categories', 'show_on_home_page',)
 
 
-class CountryResource(resources.ModelResource):
-    class Meta:
-        model = Country
-        import_id_fields = ('name',)
-        fields = ('name', 'iso_code',)
-
-
 class OrganisationResource(resources.ModelResource):
     def import_obj(self, obj, data, dry_run):
+        # check countries
         organisation_country_names_set = set(
             data.get('country', u'').split(',')
         )
@@ -107,28 +108,6 @@ class OrganisationResource(resources.ModelResource):
                     data.get('name', u''), missing_countries)
             )
 
-        return super(OrganisationResource, self).import_obj(obj, data, dry_run)
-
-    country = import_export_fields.Field(
-        attribute='country',
-        column_name='country',
-        widget=ForeignKeyWidget(
-            Country,
-            field='name'
-        ))
-
-    location = import_export_fields.Field(
-        attribute='location',
-        column_name='location',
-        widget=PointWidget()
-    )
-
-    class Meta:
-        model = Organisation
-
-
-class ServiceResource(resources.ModelResource):
-    def import_obj(self, obj, data, dry_run):
         # check categories
         service_category_names_set = set(
             data.get('categories', u'').split(',')
@@ -177,7 +156,21 @@ class ServiceResource(resources.ModelResource):
                     data.get('id', u''), missing_keywords)
             )
 
-        return super(ServiceResource, self).import_obj(obj, data, dry_run)
+        return super(OrganisationResource, self).import_obj(obj, data, dry_run)
+
+    country = import_export_fields.Field(
+        attribute='country',
+        column_name='country',
+        widget=ForeignKeyWidget(
+            Country,
+            field='name'
+        ))
+
+    location = import_export_fields.Field(
+        attribute='location',
+        column_name='location',
+        widget=PointWidget()
+    )
 
     categories = import_export_fields.Field(
         attribute='categories',
@@ -196,39 +189,31 @@ class ServiceResource(resources.ModelResource):
         ))
 
     class Meta:
-        model = Service
+        model = Organisation
 
 
-class ServiceIncorrectInformationReportResource(resources.ModelResource):
-    service = import_export_fields.Field(
-        attribute='service__name', column_name='service'
-    )
-
+class OrganisationIncorrectInformationReportResource(resources.ModelResource):
     organisation = import_export_fields.Field(
-        attribute='service__organisation__name', column_name='organisation'
+        attribute='organisation__name', column_name='organisation'
     )
 
     class Meta:
-        model = ServiceIncorrectInformationReport
+        model = OrganisationIncorrectInformationReport
 
-        fields = ('service', 'organisation', 'contact_details', 'address',
+        fields = ('organisation', 'contact_details', 'address',
                   'trading_hours', 'other', 'other_detail', 'reported_at')
 
-        export_order = ('service', 'organisation', 'contact_details',
-                        'address', 'trading_hours', 'other', 'other_detail',
+        export_order = ('organisation', 'contact_details', 'address',
+                        'trading_hours', 'other', 'other_detail',
                         'reported_at')
 
 
-class ServiceRatingResource(resources.ModelResource):
-    service = import_export_fields.Field(
-        attribute='service__name', column_name='service'
-    )
-
+class OrganisationRatingResource(resources.ModelResource):
     organisation = import_export_fields.Field(
-        attribute='service__organisation__name', column_name='organisation'
+        attribute='organisation__name', column_name='organisation'
     )
 
     class Meta:
-        model = ServiceRating
-        fields = ('service', 'organisation', 'rating', 'rated_at')
-        export_order = ('service', 'organisation', 'rating', 'rated_at')
+        model = OrganisationRating
+        fields = ('organisation', 'rating', 'rated_at')
+        export_order = ('organisation', 'rating', 'rated_at')

@@ -1,16 +1,26 @@
 from django.contrib.gis import admin
 from import_export.admin import ImportExportMixin, ExportMixin
-from models import Country, Organisation, Category, Service, Keyword, \
-    ServiceIncorrectInformationReport, ServiceRating
+from models import Country, Organisation, Category, Keyword, \
+    OrganisationIncorrectInformationReport, OrganisationRating
 from service_directory.api.admin_import_export import CountryResource, \
-    OrganisationResource, CategoryResource, KeywordResource, ServiceResource, \
-    ServiceRatingResource, ServiceIncorrectInformationReportResource
+    OrganisationResource, CategoryResource, KeywordResource, \
+    OrganisationIncorrectInformationReportResource, OrganisationRatingResource
 from service_directory.api.admin_model_forms import OrganisationModelForm
 
 
 class CountryModelAdmin(ImportExportMixin, admin.ModelAdmin):
     list_display = ('name', 'iso_code')
     resource_class = CountryResource
+
+
+class CategoryModelAdmin(ImportExportMixin, admin.ModelAdmin):
+    list_display = ('name', 'show_on_home_page')
+    resource_class = CategoryResource
+
+
+class KeywordModelAdmin(ImportExportMixin, admin.ModelAdmin):
+    list_display = ('name', 'formatted_categories', 'show_on_home_page')
+    resource_class = KeywordResource
 
 
 class OrganisationModelAdmin(ImportExportMixin, admin.OSMGeoAdmin):
@@ -31,41 +41,24 @@ class OrganisationModelAdmin(ImportExportMixin, admin.OSMGeoAdmin):
         return form
 
 
-class CategoryModelAdmin(ImportExportMixin, admin.ModelAdmin):
-    list_display = ('name', 'show_on_home_page')
-    resource_class = CategoryResource
-
-
-class KeywordModelAdmin(ImportExportMixin, admin.ModelAdmin):
-    list_display = ('name', 'formatted_categories', 'show_on_home_page')
-    resource_class = KeywordResource
-
-
-class ServiceModelAdmin(ImportExportMixin, admin.ModelAdmin):
-    list_display = ('name', 'organisation', 'formatted_categories',
-                    'formatted_keywords')
-    resource_class = ServiceResource
-
-
-class ServiceIncorrectInformationReportModelAdmin(ExportMixin,
-                                                  admin.ModelAdmin):
+class OrganisationIncorrectInformationReportModelAdmin(ExportMixin,
+                                                       admin.ModelAdmin):
     """
-    We disallow adding, modifying or deleting ServiceIncorrectInformationReport
-    instances as these should only be created through the API and not modified
-    afterwards.
+    We disallow adding, modifying or deleting
+    OrganisationIncorrectInformationReport instances as these should only be
+    created through the API and not modified afterwards.
     Currently this is the easiest way to have a 'read-only' model in admin.
     """
     actions = None
 
-    readonly_fields = ('service', 'organisation', 'reported_at',
-                       'contact_details', 'address', 'trading_hours', 'other',
-                       'other_detail')
+    readonly_fields = ('organisation', 'reported_at', 'contact_details',
+                       'address', 'trading_hours', 'other', 'other_detail')
 
-    list_display = ('service', 'organisation', 'reported_at')
+    list_display = ('organisation', 'reported_at')
 
-    list_filter = ('service', 'service__organisation', 'reported_at')
+    list_filter = ('organisation', 'reported_at')
 
-    resource_class = ServiceIncorrectInformationReportResource
+    resource_class = OrganisationIncorrectInformationReportResource
 
     def has_add_permission(self, request):
         return False
@@ -74,21 +67,21 @@ class ServiceIncorrectInformationReportModelAdmin(ExportMixin,
         return False
 
 
-class ServiceRatingModelAdmin(ExportMixin, admin.ModelAdmin):
+class OrganisationRatingModelAdmin(ExportMixin, admin.ModelAdmin):
     """
-    We disallow adding, modifying or deleting ServiceRating instances as these
-    should only be created through the API and not modified afterwards.
+    We disallow adding, modifying or deleting OrganisationRating instances as
+    these should only be created through the API and not modified afterwards.
     Currently this is the easiest way to have a 'read-only' model in admin.
     """
     actions = None
 
-    readonly_fields = ('service', 'organisation', 'rated_at', 'rating')
+    readonly_fields = ('organisation', 'rated_at', 'rating')
 
-    list_display = ('service', 'organisation', 'rating', 'rated_at')
+    list_display = ('organisation', 'rating', 'rated_at')
 
-    list_filter = ('service', 'service__organisation', 'rating', 'rated_at')
+    list_filter = ('organisation', 'rating', 'rated_at')
 
-    resource_class = ServiceRatingResource
+    resource_class = OrganisationRatingResource
 
     def has_add_permission(self, request):
         return False
@@ -102,9 +95,8 @@ admin.site.register(Country, CountryModelAdmin)
 admin.site.register(Organisation, OrganisationModelAdmin)
 admin.site.register(Category, CategoryModelAdmin)
 admin.site.register(Keyword, KeywordModelAdmin)
-admin.site.register(Service, ServiceModelAdmin)
 admin.site.register(
-    ServiceIncorrectInformationReport,
-    ServiceIncorrectInformationReportModelAdmin
+    OrganisationIncorrectInformationReport,
+    OrganisationIncorrectInformationReportModelAdmin
 )
-admin.site.register(ServiceRating, ServiceRatingModelAdmin)
+admin.site.register(OrganisationRating, OrganisationRatingModelAdmin)
