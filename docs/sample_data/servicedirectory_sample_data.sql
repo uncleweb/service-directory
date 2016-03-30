@@ -7,7 +7,6 @@ DECLARE hiv_keyword_id integer;
 DECLARE tutoring_keyword_id integer;
 DECLARE sa_country_id integer;
 DECLARE healthcareco_org_id integer;
-DECLARE hivtest_service_id integer;
 
 BEGIN
 
@@ -33,17 +32,14 @@ INSERT INTO "api_keyword_categories" (keyword_id,category_id) VALUES(tutoring_ke
 INSERT INTO "api_country" (name,iso_code) VALUES('South Africa','ZA') RETURNING id INTO sa_country_id;
 
 --organisation
-INSERT INTO "api_organisation" (name,about,address,telephone,email,web,country_id,location) VALUES('Healthcare Co','Something about them','202 The Gatehouse, Century Way, Century City','0215522159','blueteam@informationlogistics.co.za','http://www.informationlogistics.co.za',sa_country_id,'SRID=4326;POINT (18.5054960000000008 -33.8919369999999986)') RETURNING id INTO healthcareco_org_id;
+INSERT INTO "api_organisation" (name,about,address,telephone,email,web,verified_as,opening_hours,country_id,location) VALUES('Healthcare Co','Something about them','202 The Gatehouse, Century Way, Century City','0215522159','blueteam@labs.ws','http://www.afrolabs.co.za','','',sa_country_id,'SRID=4326;POINT (18.5054960000000008 -33.8919369999999986)') RETURNING id INTO healthcareco_org_id;
 
---service
-INSERT INTO "api_service" (name,verified_as,age_range_min,age_range_max,availability_hours,organisation_id) VALUES('Free HIV Test','',NULL,NULL,'8am to 5pm',healthcareco_org_id) RETURNING id INTO hivtest_service_id;
+--organisation_categories
+INSERT INTO "api_organisation_categories" (organisation_id,category_id) VALUES(healthcareco_org_id,health_category_id);
+INSERT INTO "api_organisation_categories" (organisation_id,category_id) VALUES(healthcareco_org_id,education_category_id);
 
---service_categories
-INSERT INTO "api_service_categories" (service_id,category_id) VALUES(hivtest_service_id,health_category_id);
-INSERT INTO "api_service_categories" (service_id,category_id) VALUES(hivtest_service_id,education_category_id);
-
---service_keywords
-INSERT INTO "api_service_keywords" (service_id,keyword_id) VALUES(hivtest_service_id,test_keyword_id);
-INSERT INTO "api_service_keywords" (service_id,keyword_id) VALUES(hivtest_service_id,hiv_keyword_id);
+--organisation_keywords
+INSERT INTO "api_organisation_keywords" (organisation_id,keyword_id) VALUES(healthcareco_org_id,test_keyword_id);
+INSERT INTO "api_organisation_keywords" (organisation_id,keyword_id) VALUES(healthcareco_org_id,hiv_keyword_id);
 
 END $$;
