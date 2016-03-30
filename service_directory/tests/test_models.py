@@ -3,9 +3,8 @@ from datetime import datetime, timedelta
 from django.contrib.gis.geos import Point
 from django.test import TestCase
 from pytz import utc
-from service_directory.api.models import Country, Organisation, \
-    Category, Service, Keyword, ServiceIncorrectInformationReport, \
-    ServiceRating
+from service_directory.api.models import Country, Organisation, Category,\
+    Keyword
 
 
 class CountryTestCase(TestCase):
@@ -122,179 +121,179 @@ class KeywordTestCase(TestCase):
         self.assertEqual('test changed', keyword.name)
 
 
-class ServiceTestCase(TestCase):
-    def setUp(self):
-        self.country = Country.objects.create(
-            name='South Africa',
-            iso_code='ZA'
-        )
-        self.country.full_clean()  # force model validation to happen
-
-        self.category = Category.objects.create(name='Test Category')
-        self.category.full_clean()  # force model validation to happen
-
-        self.keyword = Keyword.objects.create(name='test')
-        self.keyword.full_clean()  # force model validation to happen
-        self.keyword.categories.add(self.category)
-
-        self.organisation = Organisation.objects.create(
-            name='Test Org',
-            country=self.country,
-            location=Point(18.505496, -33.891937, srid=4326)
-        )
-        self.organisation.full_clean()  # force model validation to happen
-
-        service = Service.objects.create(
-            name='Test Service',
-            organisation=self.organisation
-        )
-        service.full_clean()  # force model validation to happen
-        service.categories.add(self.category)
-        service.keywords.add(self.keyword)
-
-    def test_query(self):
-        services = Service.objects.filter(organisation=self.organisation)
-
-        self.assertEqual(1, len(services))
-        self.assertEqual('Test Service', services[0].name)
-        self.assertTrue('Test Category' in services[0].formatted_categories())
-        self.assertTrue('test' in services[0].formatted_keywords())
-
-    def test_update(self):
-        service = Service.objects.filter(organisation=self.organisation).get()
-
-        service.verified_as = 'Child Friendly'
-        service.save()
-
-        service.refresh_from_db()
-        self.assertEqual('Child Friendly', service.verified_as)
-
-
-class ServiceIncorrectInformationReportTestCase(TestCase):
-    def setUp(self):
-        self.country = Country.objects.create(
-            name='South Africa',
-            iso_code='ZA'
-        )
-        self.country.full_clean()  # force model validation to happen
-
-        self.category = Category.objects.create(name='Test Category')
-        self.category.full_clean()  # force model validation to happen
-
-        self.keyword = Keyword.objects.create(name='test')
-        self.keyword.full_clean()  # force model validation to happen
-        self.keyword.categories.add(self.category)
-
-        self.organisation = Organisation.objects.create(
-            name='Test Org',
-            country=self.country,
-            location=Point(18.505496, -33.891937, srid=4326)
-        )
-        self.organisation.full_clean()  # force model validation to happen
-
-        self.service = Service.objects.create(
-            name='Test Service',
-            organisation=self.organisation
-        )
-        self.service.full_clean()  # force model validation to happen
-        self.service.categories.add(self.category)
-        self.service.keywords.add(self.keyword)
-
-        report = ServiceIncorrectInformationReport.objects.create(
-            service=self.service,
-            contact_details=True
-        )
-        report.full_clean()  # force model validation to happen
-
-    def test_query(self):
-        reports = ServiceIncorrectInformationReport.objects.filter(
-            service=self.service
-        )
-
-        self.assertEqual(1, len(reports))
-        self.assertTrue(reports[0].contact_details)
-        self.assertIsNone(reports[0].address)
-        self.assertIsNone(reports[0].trading_hours)
-        self.assertIsNone(reports[0].other)
-        self.assertEqual('', reports[0].other_detail)
-
-        self.assertAlmostEqual(
-            datetime.now(utc),
-            reports[0].reported_at,
-            delta=timedelta(seconds=10)
-        )
-
-    def test_update(self):
-        report = ServiceIncorrectInformationReport.objects.filter(
-            service=self.service
-        ).get()
-
-        report.other = True
-        report.other_detail = 'Test'
-        report.save()
-
-        report.refresh_from_db()
-        self.assertTrue(report.other)
-        self.assertEqual('Test', report.other_detail)
+# class ServiceTestCase(TestCase):
+#     def setUp(self):
+#         self.country = Country.objects.create(
+#             name='South Africa',
+#             iso_code='ZA'
+#         )
+#         self.country.full_clean()  # force model validation to happen
+#
+#         self.category = Category.objects.create(name='Test Category')
+#         self.category.full_clean()  # force model validation to happen
+#
+#         self.keyword = Keyword.objects.create(name='test')
+#         self.keyword.full_clean()  # force model validation to happen
+#         self.keyword.categories.add(self.category)
+#
+#         self.organisation = Organisation.objects.create(
+#             name='Test Org',
+#             country=self.country,
+#             location=Point(18.505496, -33.891937, srid=4326)
+#         )
+#         self.organisation.full_clean()  # force model validation to happen
+#
+#         service = Service.objects.create(
+#             name='Test Service',
+#             organisation=self.organisation
+#         )
+#         service.full_clean()  # force model validation to happen
+#         service.categories.add(self.category)
+#         service.keywords.add(self.keyword)
+#
+#     def test_query(self):
+#         services = Service.objects.filter(organisation=self.organisation)
+#
+#         self.assertEqual(1, len(services))
+#         self.assertEqual('Test Service', services[0].name)
+#         self.assertTrue('Test Category' in services[0].formatted_categories())
+#         self.assertTrue('test' in services[0].formatted_keywords())
+#
+#     def test_update(self):
+#         service = Service.objects.filter(organisation=self.organisation).get()
+#
+#         service.verified_as = 'Child Friendly'
+#         service.save()
+#
+#         service.refresh_from_db()
+#         self.assertEqual('Child Friendly', service.verified_as)
 
 
-class ServiceRatingTestCase(TestCase):
-    def setUp(self):
-        self.country = Country.objects.create(
-            name='South Africa',
-            iso_code='ZA'
-        )
-        self.country.full_clean()  # force model validation to happen
-
-        self.category = Category.objects.create(name='Test Category')
-        self.category.full_clean()  # force model validation to happen
-
-        self.keyword = Keyword.objects.create(name='test')
-        self.keyword.full_clean()  # force model validation to happen
-        self.keyword.categories.add(self.category)
-
-        self.organisation = Organisation.objects.create(
-            name='Test Org',
-            country=self.country,
-            location=Point(18.505496, -33.891937, srid=4326)
-        )
-        self.organisation.full_clean()  # force model validation to happen
-
-        self.service = Service.objects.create(
-            name='Test Service',
-            organisation=self.organisation
-        )
-        self.service.full_clean()  # force model validation to happen
-        self.service.categories.add(self.category)
-        self.service.keywords.add(self.keyword)
-
-        rating = ServiceRating.objects.create(
-            service=self.service,
-            rating=ServiceRating.AVERAGE
-        )
-        rating.full_clean()  # force model validation to happen
-
-    def test_query(self):
-        ratings = ServiceRating.objects.filter(
-            service=self.service
-        )
-
-        self.assertEqual(1, len(ratings))
-        self.assertEqual(ServiceRating.AVERAGE, ratings[0].rating)
-
-        self.assertAlmostEqual(
-            datetime.now(utc),
-            ratings[0].rated_at,
-            delta=timedelta(seconds=10)
-        )
-
-    def test_update(self):
-        rating = ServiceRating.objects.filter(
-            service=self.service
-        ).get()
-
-        rating.rating = ServiceRating.GOOD
-        rating.save()
-
-        rating.refresh_from_db()
-        self.assertEqual(ServiceRating.GOOD, rating.rating)
+# class ServiceIncorrectInformationReportTestCase(TestCase):
+#     def setUp(self):
+#         self.country = Country.objects.create(
+#             name='South Africa',
+#             iso_code='ZA'
+#         )
+#         self.country.full_clean()  # force model validation to happen
+#
+#         self.category = Category.objects.create(name='Test Category')
+#         self.category.full_clean()  # force model validation to happen
+#
+#         self.keyword = Keyword.objects.create(name='test')
+#         self.keyword.full_clean()  # force model validation to happen
+#         self.keyword.categories.add(self.category)
+#
+#         self.organisation = Organisation.objects.create(
+#             name='Test Org',
+#             country=self.country,
+#             location=Point(18.505496, -33.891937, srid=4326)
+#         )
+#         self.organisation.full_clean()  # force model validation to happen
+#
+#         self.service = Service.objects.create(
+#             name='Test Service',
+#             organisation=self.organisation
+#         )
+#         self.service.full_clean()  # force model validation to happen
+#         self.service.categories.add(self.category)
+#         self.service.keywords.add(self.keyword)
+#
+#         report = ServiceIncorrectInformationReport.objects.create(
+#             service=self.service,
+#             contact_details=True
+#         )
+#         report.full_clean()  # force model validation to happen
+#
+#     def test_query(self):
+#         reports = ServiceIncorrectInformationReport.objects.filter(
+#             service=self.service
+#         )
+#
+#         self.assertEqual(1, len(reports))
+#         self.assertTrue(reports[0].contact_details)
+#         self.assertIsNone(reports[0].address)
+#         self.assertIsNone(reports[0].trading_hours)
+#         self.assertIsNone(reports[0].other)
+#         self.assertEqual('', reports[0].other_detail)
+#
+#         self.assertAlmostEqual(
+#             datetime.now(utc),
+#             reports[0].reported_at,
+#             delta=timedelta(seconds=10)
+#         )
+#
+#     def test_update(self):
+#         report = ServiceIncorrectInformationReport.objects.filter(
+#             service=self.service
+#         ).get()
+#
+#         report.other = True
+#         report.other_detail = 'Test'
+#         report.save()
+#
+#         report.refresh_from_db()
+#         self.assertTrue(report.other)
+#         self.assertEqual('Test', report.other_detail)
+#
+#
+# class ServiceRatingTestCase(TestCase):
+#     def setUp(self):
+#         self.country = Country.objects.create(
+#             name='South Africa',
+#             iso_code='ZA'
+#         )
+#         self.country.full_clean()  # force model validation to happen
+#
+#         self.category = Category.objects.create(name='Test Category')
+#         self.category.full_clean()  # force model validation to happen
+#
+#         self.keyword = Keyword.objects.create(name='test')
+#         self.keyword.full_clean()  # force model validation to happen
+#         self.keyword.categories.add(self.category)
+#
+#         self.organisation = Organisation.objects.create(
+#             name='Test Org',
+#             country=self.country,
+#             location=Point(18.505496, -33.891937, srid=4326)
+#         )
+#         self.organisation.full_clean()  # force model validation to happen
+#
+#         self.service = Service.objects.create(
+#             name='Test Service',
+#             organisation=self.organisation
+#         )
+#         self.service.full_clean()  # force model validation to happen
+#         self.service.categories.add(self.category)
+#         self.service.keywords.add(self.keyword)
+#
+#         rating = ServiceRating.objects.create(
+#             service=self.service,
+#             rating=ServiceRating.AVERAGE
+#         )
+#         rating.full_clean()  # force model validation to happen
+#
+#     def test_query(self):
+#         ratings = ServiceRating.objects.filter(
+#             service=self.service
+#         )
+#
+#         self.assertEqual(1, len(ratings))
+#         self.assertEqual(ServiceRating.AVERAGE, ratings[0].rating)
+#
+#         self.assertAlmostEqual(
+#             datetime.now(utc),
+#             ratings[0].rated_at,
+#             delta=timedelta(seconds=10)
+#         )
+#
+#     def test_update(self):
+#         rating = ServiceRating.objects.filter(
+#             service=self.service
+#         ).get()
+#
+#         rating.rating = ServiceRating.GOOD
+#         rating.save()
+#
+#         rating.refresh_from_db()
+#         self.assertEqual(ServiceRating.GOOD, rating.rating)

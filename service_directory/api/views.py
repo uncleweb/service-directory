@@ -12,11 +12,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from service_directory.api.haystack_elasticsearch_raw_query.\
     custom_elasticsearch import ConfigurableSearchQuerySet
-from service_directory.api.models import Service, Keyword, Category
-from service_directory.api.serializers import ServiceSerializer, \
-    ServiceSummarySerializer, HomePageCategoryKeywordGroupingSerializer, \
-    KeywordSerializer, ServiceIncorrectInformationReportSerializer, \
-    ServiceRatingSerializer, ServiceSendSMSRequestSerializer, \
+from service_directory.api.models import Keyword, Category
+from service_directory.api.serializers import\
+    HomePageCategoryKeywordGroupingSerializer, \
+    KeywordSerializer, ServiceSendSMSRequestSerializer, \
     ServiceSendSMSResponseSerializer
 
 google_analytics_tracker = Tracker.create(
@@ -106,180 +105,180 @@ class KeywordList(ListAPIView):
         return queryset
 
 
-class ServiceLookup(APIView):
-    """
-    Query services by keyword and/or location
-    ---
-    GET:
-        parameters:
-            - name: keyword
-              type: string
-              paramType: query
-            - name: near
-              description: latitude,longitude
-              type: string
-              paramType: query
-            - name: place_name
-              description: only used for analytics purposes
-              type: string
-              paramType: query
-        response_serializer: ServiceSummarySerializer
-    """
-    def get(self, request):
-        keyword = None
-        point = None
-        place_name = None
-
-        if 'keyword' in request.query_params:
-            keyword = request.query_params['keyword'].strip()
-
-        if 'near' in request.query_params:
-            latlng = request.query_params['near'].strip()
-            lat, lng = latlng.split(',')
-            lat = float(lat)
-            lng = float(lng)
-            point = Point(lng, lat, srid=4326)
-
-        if 'place_name' in request.query_params:
-            place_name = request.query_params['place_name'].strip()
-
-        send_ga_tracking_event(
-            request._request.path, 'Search', keyword or '', place_name or ''
-        )
-
-        sqs = ConfigurableSearchQuerySet().models(Service)
-
-        if keyword:
-            query = {
-                "match": {
-                    "text": {
-                        "query": keyword,
-                        "fuzziness": "AUTO"
-                    }
-                }
-            }
-            sqs = sqs.custom_query(query)
-
-        if point:
-            sqs = sqs.distance('location', point).order_by('distance')
-
-        # fetch all result objects and limit to 20 results
-        sqs = sqs.load_all()[:20]
-
-        service_distance_tuples = []
-        try:
-            service_distance_tuples = [
-                (
-                    result.object,
-                    result.distance if hasattr(result, 'distance') else None
-                )
-                for result in sqs
-            ]
-        except AttributeError:
-            logging.warn('The ElasticSearch index is likely out of sync with'
-                         ' the database. You should run the `rebuild_index`'
-                         ' management command.')
-
-        for service, distance in service_distance_tuples:
-            if distance is not None:
-                service.distance = '{0:.2f}km'.format(distance.km)
-
-        if service_distance_tuples:
-            services = zip(*service_distance_tuples)[0]
-            serializer = ServiceSummarySerializer(services, many=True)
-            return Response(serializer.data)
-
-        return Response([])
-
-
-class ServiceDetail(RetrieveAPIView):
-    """
-    Retrieve service details
-    """
-    queryset = Service.objects.all()
-    serializer_class = ServiceSerializer
-
-    def get(self, request, *args, **kwargs):
-        response = super(ServiceDetail, self).get(request, *args, **kwargs)
-
-        if response and response.data:
-            try:
-                service_name = response.data['name']
-                organisation_name = response.data['organisation']['name']
-                label = '{0} ({1})'.format(service_name, organisation_name)
-
-                send_ga_tracking_event(
-                    request._request.path, 'View', 'Service', label
-                )
-            except (KeyError, TypeError):
-                logging.warn("Did not find expected data in response to make"
-                             " Google Analytics call", exc_info=True)
-
-        return response
+# class ServiceLookup(APIView):
+#     """
+#     Query services by keyword and/or location
+#     ---
+#     GET:
+#         parameters:
+#             - name: keyword
+#               type: string
+#               paramType: query
+#             - name: near
+#               description: latitude,longitude
+#               type: string
+#               paramType: query
+#             - name: place_name
+#               description: only used for analytics purposes
+#               type: string
+#               paramType: query
+#         response_serializer: ServiceSummarySerializer
+#     """
+#     def get(self, request):
+#         keyword = None
+#         point = None
+#         place_name = None
+#
+#         if 'keyword' in request.query_params:
+#             keyword = request.query_params['keyword'].strip()
+#
+#         if 'near' in request.query_params:
+#             latlng = request.query_params['near'].strip()
+#             lat, lng = latlng.split(',')
+#             lat = float(lat)
+#             lng = float(lng)
+#             point = Point(lng, lat, srid=4326)
+#
+#         if 'place_name' in request.query_params:
+#             place_name = request.query_params['place_name'].strip()
+#
+#         send_ga_tracking_event(
+#             request._request.path, 'Search', keyword or '', place_name or ''
+#         )
+#
+#         sqs = ConfigurableSearchQuerySet().models(Service)
+#
+#         if keyword:
+#             query = {
+#                 "match": {
+#                     "text": {
+#                         "query": keyword,
+#                         "fuzziness": "AUTO"
+#                     }
+#                 }
+#             }
+#             sqs = sqs.custom_query(query)
+#
+#         if point:
+#             sqs = sqs.distance('location', point).order_by('distance')
+#
+#         # fetch all result objects and limit to 20 results
+#         sqs = sqs.load_all()[:20]
+#
+#         service_distance_tuples = []
+#         try:
+#             service_distance_tuples = [
+#                 (
+#                     result.object,
+#                     result.distance if hasattr(result, 'distance') else None
+#                 )
+#                 for result in sqs
+#             ]
+#         except AttributeError:
+#             logging.warn('The ElasticSearch index is likely out of sync with'
+#                          ' the database. You should run the `rebuild_index`'
+#                          ' management command.')
+#
+#         for service, distance in service_distance_tuples:
+#             if distance is not None:
+#                 service.distance = '{0:.2f}km'.format(distance.km)
+#
+#         if service_distance_tuples:
+#             services = zip(*service_distance_tuples)[0]
+#             serializer = ServiceSummarySerializer(services, many=True)
+#             return Response(serializer.data)
+#
+#         return Response([])
 
 
-class ServiceReportIncorrectInformation(APIView):
-    """
-    Report incorrect information for a service
-    ---
-    POST:
-         serializer: ServiceIncorrectInformationReportSerializer
-    """
-    def post(self, request, *args, **kwargs):
-        service_id = int(kwargs.pop('pk'))
-
-        try:
-            service = Service.objects.get(id=service_id)
-        except Service.DoesNotExist:
-            raise Http404
-
-        serializer = ServiceIncorrectInformationReportSerializer(
-            data=request.data
-        )
-
-        serializer.is_valid(raise_exception=True)
-        serializer.save(service=service)
-
-        label = '{0} ({1})'.format(service.name, service.organisation.name)
-        send_ga_tracking_event(
-            request._request.path, 'Feedback',
-            'ServiceIncorrectInformationReport', label
-        )
-
-        return Response(serializer.data,
-                        status=status.HTTP_201_CREATED)
+# class ServiceDetail(RetrieveAPIView):
+#     """
+#     Retrieve service details
+#     """
+#     queryset = Service.objects.all()
+#     serializer_class = ServiceSerializer
+#
+#     def get(self, request, *args, **kwargs):
+#         response = super(ServiceDetail, self).get(request, *args, **kwargs)
+#
+#         if response and response.data:
+#             try:
+#                 service_name = response.data['name']
+#                 organisation_name = response.data['organisation']['name']
+#                 label = '{0} ({1})'.format(service_name, organisation_name)
+#
+#                 send_ga_tracking_event(
+#                     request._request.path, 'View', 'Service', label
+#                 )
+#             except (KeyError, TypeError):
+#                 logging.warn("Did not find expected data in response to make"
+#                              " Google Analytics call", exc_info=True)
+#
+#         return response
 
 
-class ServiceRate(APIView):
-    """
-    Rate the quality of a service
-    ---
-    POST:
-         serializer: ServiceRatingSerializer
-    """
-    def post(self, request, *args, **kwargs):
-        service_id = int(kwargs.pop('pk'))
+# class ServiceReportIncorrectInformation(APIView):
+#     """
+#     Report incorrect information for a service
+#     ---
+#     POST:
+#          serializer: ServiceIncorrectInformationReportSerializer
+#     """
+#     def post(self, request, *args, **kwargs):
+#         service_id = int(kwargs.pop('pk'))
+#
+#         try:
+#             service = Service.objects.get(id=service_id)
+#         except Service.DoesNotExist:
+#             raise Http404
+#
+#         serializer = ServiceIncorrectInformationReportSerializer(
+#             data=request.data
+#         )
+#
+#         serializer.is_valid(raise_exception=True)
+#         serializer.save(service=service)
+#
+#         label = '{0} ({1})'.format(service.name, service.organisation.name)
+#         send_ga_tracking_event(
+#             request._request.path, 'Feedback',
+#             'ServiceIncorrectInformationReport', label
+#         )
+#
+#         return Response(serializer.data,
+#                         status=status.HTTP_201_CREATED)
 
-        try:
-            service = Service.objects.get(id=service_id)
-        except Service.DoesNotExist:
-            raise Http404
 
-        serializer = ServiceRatingSerializer(
-            data=request.data
-        )
-
-        serializer.is_valid(raise_exception=True)
-        serializer.save(service=service)
-
-        label = '{0} ({1})'.format(service.name, service.organisation.name)
-        send_ga_tracking_event(
-            request._request.path, 'Feedback',
-            'ServiceRating', label
-        )
-
-        return Response(serializer.data,
-                        status=status.HTTP_201_CREATED)
+# class ServiceRate(APIView):
+#     """
+#     Rate the quality of a service
+#     ---
+#     POST:
+#          serializer: ServiceRatingSerializer
+#     """
+#     def post(self, request, *args, **kwargs):
+#         service_id = int(kwargs.pop('pk'))
+#
+#         try:
+#             service = Service.objects.get(id=service_id)
+#         except Service.DoesNotExist:
+#             raise Http404
+#
+#         serializer = ServiceRatingSerializer(
+#             data=request.data
+#         )
+#
+#         serializer.is_valid(raise_exception=True)
+#         serializer.save(service=service)
+#
+#         label = '{0} ({1})'.format(service.name, service.organisation.name)
+#         send_ga_tracking_event(
+#             request._request.path, 'Feedback',
+#             'ServiceRating', label
+#         )
+#
+#         return Response(serializer.data,
+#                         status=status.HTTP_201_CREATED)
 
 
 class ServiceSendSMS(APIView):

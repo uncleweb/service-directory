@@ -10,9 +10,9 @@ from haystack import signal_processor
 from haystack.backends.elasticsearch_backend import ElasticsearchSearchBackend
 from pytz import utc
 from rest_framework.test import APIClient
-from service_directory.api.models import Country, Category, Organisation, \
-    Service, Keyword
-from service_directory.api.search_indexes import ServiceIndex
+from service_directory.api.models import Country, Category, Keyword,\
+    Organisation
+# from service_directory.api.search_indexes import ServiceIndex
 
 
 def reset_haystack_index():
@@ -26,7 +26,7 @@ def reset_haystack_index():
     search_backend.clear()
 
     # this sets up the required mappings for us
-    search_backend.update(ServiceIndex(), [])
+    # search_backend.update(ServiceIndex(), [])
 
 
 class ServiceLookupTestCase(TestCase):
@@ -94,36 +94,36 @@ class ServiceLookupTestCase(TestCase):
         )
         cls.org_cmc.full_clean()  # force model validation to happen
 
-        test_service_1 = Service.objects.create(
-            name='Surgery',
-            organisation=cls.org_cbmh
-        )
-        test_service_1.full_clean()  # force model validation to happen
-        test_service_1.categories.add(cls.category)
-        test_service_1.keywords.add(
-            cls.keyword_test, cls.keyword_heart, cls.keyword_transplant,
-            cls.keyword_trauma
-        )
-
-        test_service_2 = Service.objects.create(
-            name='Free HIV Test',
-            organisation=cls.org_khc
-        )
-        test_service_2.full_clean()  # force model validation to happen
-        test_service_2.categories.add(cls.category)
-        test_service_2.keywords.add(
-            cls.keyword_test, cls.keyword_hiv, cls.keyword_aids
-        )
-
-        test_service_3 = Service.objects.create(
-            name='A&E',
-            organisation=cls.org_cmc
-        )
-        test_service_3.full_clean()  # force model validation to happen
-        test_service_3.categories.add(cls.category)
-        test_service_3.keywords.add(
-            cls.keyword_test, cls.keyword_trauma, cls.keyword_accident
-        )
+        # test_service_1 = Service.objects.create(
+        #     name='Surgery',
+        #     organisation=cls.org_cbmh
+        # )
+        # test_service_1.full_clean()  # force model validation to happen
+        # test_service_1.categories.add(cls.category)
+        # test_service_1.keywords.add(
+        #     cls.keyword_test, cls.keyword_heart, cls.keyword_transplant,
+        #     cls.keyword_trauma
+        # )
+        #
+        # test_service_2 = Service.objects.create(
+        #     name='Free HIV Test',
+        #     organisation=cls.org_khc
+        # )
+        # test_service_2.full_clean()  # force model validation to happen
+        # test_service_2.categories.add(cls.category)
+        # test_service_2.keywords.add(
+        #     cls.keyword_test, cls.keyword_hiv, cls.keyword_aids
+        # )
+        #
+        # test_service_3 = Service.objects.create(
+        #     name='A&E',
+        #     organisation=cls.org_cmc
+        # )
+        # test_service_3.full_clean()  # force model validation to happen
+        # test_service_3.categories.add(cls.category)
+        # test_service_3.keywords.add(
+        #     cls.keyword_test, cls.keyword_trauma, cls.keyword_accident
+        # )
 
         # Usually the middleware is responsible for doing this
         # See HaystackBatchFlushMiddleware & BatchingSignalProcessor
@@ -352,13 +352,13 @@ class ServiceDetailTestCase(TestCase):
         )
         cls.org.full_clean()  # force model validation to happen
 
-        cls.service = Service.objects.create(
-            name='Test Service',
-            organisation=cls.org
-        )
-        cls.service.full_clean()  # force model validation to happen
-        cls.service.categories.add(cls.category)
-        cls.service.keywords.add(cls.keyword)
+        # cls.service = Service.objects.create(
+        #     name='Test Service',
+        #     organisation=cls.org
+        # )
+        # cls.service.full_clean()  # force model validation to happen
+        # cls.service.categories.add(cls.category)
+        # cls.service.keywords.add(cls.keyword)
 
     def test_get(self):
         response = self.client.get(
@@ -430,11 +430,11 @@ class ServiceReportIncorrectInformationTestCase(TestCase):
         )
         cls.org.full_clean()  # force model validation to happen
 
-        cls.service = Service.objects.create(
-            name='Test Service',
-            organisation=cls.org
-        )
-        cls.service.full_clean()  # force model validation to happen
+        # cls.service = Service.objects.create(
+        #     name='Test Service',
+        #     organisation=cls.org
+        # )
+        # cls.service.full_clean()  # force model validation to happen
 
     def test_post(self):
         response = self.client.post(
@@ -501,11 +501,11 @@ class ServiceRateTestCase(TestCase):
         )
         cls.org.full_clean()  # force model validation to happen
 
-        cls.service = Service.objects.create(
-            name='Test Service',
-            organisation=cls.org
-        )
-        cls.service.full_clean()  # force model validation to happen
+        # cls.service = Service.objects.create(
+        #     name='Test Service',
+        #     organisation=cls.org
+        # )
+        # cls.service.full_clean()  # force model validation to happen
 
     def test_post(self):
         response = self.client.post(

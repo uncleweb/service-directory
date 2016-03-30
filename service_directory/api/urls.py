@@ -12,12 +12,12 @@ urlpatterns = [
 
     url(r'^keywords/$', views.KeywordList.as_view()),
 
-    url(r'^service_lookup/$', views.ServiceLookup.as_view()),
-    url(r'^service/(?P<pk>[0-9]+)/$', views.ServiceDetail.as_view()),
-    url(r'^service/(?P<pk>[0-9]+)/report/$',
-        views.ServiceReportIncorrectInformation.as_view()),
-    url(r'^service/(?P<pk>[0-9]+)/rate/$',
-        views.ServiceRate.as_view()),
+    # url(r'^service_lookup/$', views.ServiceLookup.as_view()),
+    # url(r'^service/(?P<pk>[0-9]+)/$', views.ServiceDetail.as_view()),
+    # url(r'^service/(?P<pk>[0-9]+)/report/$',
+    #     views.ServiceReportIncorrectInformation.as_view()),
+    # url(r'^service/(?P<pk>[0-9]+)/rate/$',
+    #     views.ServiceRate.as_view()),
     url(r'^service/sms/$',
         views.ServiceSendSMS.as_view()),
 
