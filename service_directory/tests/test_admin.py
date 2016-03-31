@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.test import TestCase
-from service_directory.api.models import Country, Organisation
+from service_directory.api.models import Country, Organisation, Category, \
+    Keyword
 
 
 class OrganisationModelFormTestCase(TestCase):
@@ -20,12 +21,22 @@ class OrganisationModelFormTestCase(TestCase):
         )
         cls.country.full_clean()  # force model validation to happen
 
+        cls.category = Category.objects.create(name='Test Category')
+        cls.category.full_clean()  # force model validation to happen
+
+        cls.keyword = Keyword.objects.create(name='test')
+        cls.keyword.full_clean()  # force model validation to happen
+        cls.keyword.categories.add(cls.category)
+
         cls.org_cbmh = Organisation.objects.create(
             name='Netcare Christiaan Barnard Memorial Hospital',
             country=cls.country,
             location=Point(18.418231, -33.921859, srid=4326)
         )
         cls.org_cbmh.full_clean()  # force model validation to happen
+
+        cls.org_cbmh.categories.add(cls.category)
+        cls.org_cbmh.keywords.add(cls.keyword)
 
         cls.api_url = '/admin/api/organisation/{0}/'.format(cls.org_cbmh.id)
 
@@ -40,8 +51,16 @@ class OrganisationModelFormTestCase(TestCase):
             'telephone': self.org_cbmh.telephone,
             'email': self.org_cbmh.email,
             'web': self.org_cbmh.web,
+            'verified_as': self.org_cbmh.verified_as,
+            'age_range_min': self.org_cbmh.age_range_min if
+            self.org_cbmh.age_range_min else '',
+            'age_range_max': self.org_cbmh.age_range_max if
+            self.org_cbmh.age_range_max else '',
+            'opening_hours': self.org_cbmh.opening_hours,
             'country': self.org_cbmh.country_id,
-            'location': self.org_cbmh.location
+            'location': self.org_cbmh.location,
+            'categories': self.category.id,
+            'keywords': self.keyword.id
         }
         return data
 
@@ -54,6 +73,8 @@ class OrganisationModelFormTestCase(TestCase):
 
         response = self.client.post(self.api_url, data)
 
+        # if the status_code is 200 then validation for one of the fields
+        # probably failed - check the HTML response content
         self.assertEqual(302, response.status_code)
         self.assertTrue(
             response._headers['location'][1].endswith(
@@ -91,6 +112,8 @@ class OrganisationModelFormTestCase(TestCase):
 
         response = self.client.post(self.api_url, data)
 
+        # if the status_code is 200 then validation for one of the fields
+        # probably failed - check the HTML response content
         self.assertEqual(302, response.status_code)
         self.assertTrue(
             response._headers['location'][1].endswith(
