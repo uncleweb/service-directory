@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
-from models import Organisation, Category, Keyword
+from models import Organisation, Category, Keyword, \
+    OrganisationIncorrectInformationReport
 from rest_framework import serializers
 
 
@@ -51,12 +52,13 @@ class OrganisationSerializer(serializers.ModelSerializer):
         depth = 1
 
 
-# class ServiceIncorrectInformationReportSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = ServiceIncorrectInformationReport
-#         read_only_fields = ('service',)
-#
-#
+class OrganisationIncorrectInformationReportSerializer(
+        serializers.ModelSerializer):
+    class Meta:
+        model = OrganisationIncorrectInformationReport
+        read_only_fields = ('organisation',)
+
+
 # class ServiceRatingSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = ServiceRating

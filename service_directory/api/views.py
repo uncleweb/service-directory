@@ -17,7 +17,7 @@ from service_directory.api.serializers import\
     HomePageCategoryKeywordGroupingSerializer, \
     KeywordSerializer, ServiceSendSMSRequestSerializer, \
     ServiceSendSMSResponseSerializer, OrganisationSummarySerializer, \
-    OrganisationSerializer
+    OrganisationSerializer, OrganisationIncorrectInformationReportSerializer
 
 google_analytics_tracker = Tracker.create(
     settings.GOOGLE_ANALYTICS_TRACKING_ID,
@@ -223,36 +223,35 @@ class OrganisationDetail(RetrieveAPIView):
         return response
 
 
-# class ServiceReportIncorrectInformation(APIView):
-#     """
-#     Report incorrect information for a service
-#     ---
-#     POST:
-#          serializer: ServiceIncorrectInformationReportSerializer
-#     """
-#     def post(self, request, *args, **kwargs):
-#         service_id = int(kwargs.pop('pk'))
-#
-#         try:
-#             service = Service.objects.get(id=service_id)
-#         except Service.DoesNotExist:
-#             raise Http404
-#
-#         serializer = ServiceIncorrectInformationReportSerializer(
-#             data=request.data
-#         )
-#
-#         serializer.is_valid(raise_exception=True)
-#         serializer.save(service=service)
-#
-#         label = '{0} ({1})'.format(service.name, service.organisation.name)
-#         send_ga_tracking_event(
-#             request._request.path, 'Feedback',
-#             'ServiceIncorrectInformationReport', label
-#         )
-#
-#         return Response(serializer.data,
-#                         status=status.HTTP_201_CREATED)
+class OrganisationReportIncorrectInformation(APIView):
+    """
+    Report incorrect information for an organisation
+    ---
+    POST:
+         serializer: OrganisationIncorrectInformationReportSerializer
+    """
+    def post(self, request, *args, **kwargs):
+        organisation_id = int(kwargs.pop('pk'))
+
+        try:
+            organisation = Organisation.objects.get(id=organisation_id)
+        except Organisation.DoesNotExist:
+            raise Http404
+
+        serializer = OrganisationIncorrectInformationReportSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(raise_exception=True)
+        serializer.save(organisation=organisation)
+
+        send_ga_tracking_event(
+            request._request.path, 'Feedback',
+            'OrganisationIncorrectInformationReport', organisation.name
+        )
+
+        return Response(serializer.data,
+                        status=status.HTTP_201_CREATED)
 
 
 # class ServiceRate(APIView):

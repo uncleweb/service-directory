@@ -361,7 +361,7 @@ class OrganisationDetailTestCase(TestCase):
         self.assertJSONEqual(response.content, expected_response_content)
 
 
-class ServiceReportIncorrectInformationTestCase(TestCase):
+class OrganisationReportIncorrectInformationTestCase(TestCase):
     client_class = APIClient
 
     @classmethod
@@ -379,15 +379,9 @@ class ServiceReportIncorrectInformationTestCase(TestCase):
         )
         cls.org.full_clean()  # force model validation to happen
 
-        # cls.service = Service.objects.create(
-        #     name='Test Service',
-        #     organisation=cls.org
-        # )
-        # cls.service.full_clean()  # force model validation to happen
-
     def test_post(self):
         response = self.client.post(
-            '/api/service/{0}/report/'.format(self.service.id),
+            '/api/organisation/{0}/report/'.format(self.org.id),
             {
                 'contact_details': True
             },
@@ -417,9 +411,9 @@ class ServiceReportIncorrectInformationTestCase(TestCase):
                 "trading_hours":null,
                 "other":null,
                 "other_detail":"",
-                "service":%s
+                "organisation":%s
             }
-        ''' % (self.service.id,)
+        ''' % (self.org.id,)
 
         self.assertJSONEqual(modified_response_content,
                              expected_response_content)
