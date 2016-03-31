@@ -31,5 +31,9 @@ HAYSTACK_CONNECTIONS = {
     },
 }
 
-GOOGLE_ANALYTICS_TRACKING_ID = \
-    environ.get('GOOGLE_ANALYTICS_TRACKING_ID', 'please-change-me')
+GOOGLE_ANALYTICS_TRACKING_ID = environ.get('GOOGLE_ANALYTICS_TRACKING_ID', 'please-change-me')
+
+VUMI_GO_ACCOUNT_KEY = environ.get('VUMI_GO_ACCOUNT_KEY', 'please-change-me')
+VUMI_GO_CONVERSATION_KEY = environ.get('VUMI_GO_CONVERSATION_KEY', 'please-change-me')
+VUMI_GO_API_TOKEN = environ.get('VUMI_GO_API_TOKEN', 'please-change-me')
+VUMI_GO_API_URL = environ.get('VUMI_GO_API_URL', 'please-change-me')
