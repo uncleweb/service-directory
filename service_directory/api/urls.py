@@ -13,7 +13,7 @@ urlpatterns = [
     url(r'^keywords/$', views.KeywordList.as_view()),
 
     url(r'^search/$', views.Search.as_view()),
-    # url(r'^service/(?P<pk>[0-9]+)/$', views.ServiceDetail.as_view()),
+    url(r'^organisation/(?P<pk>[0-9]+)/$', views.OrganisationDetail.as_view()),
     # url(r'^service/(?P<pk>[0-9]+)/report/$',
     #     views.ServiceReportIncorrectInformation.as_view()),
     # url(r'^service/(?P<pk>[0-9]+)/rate/$',

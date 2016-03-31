@@ -16,7 +16,8 @@ from service_directory.api.models import Keyword, Category, Organisation
 from service_directory.api.serializers import\
     HomePageCategoryKeywordGroupingSerializer, \
     KeywordSerializer, ServiceSendSMSRequestSerializer, \
-    ServiceSendSMSResponseSerializer, OrganisationSummarySerializer
+    ServiceSendSMSResponseSerializer, OrganisationSummarySerializer, \
+    OrganisationSerializer
 
 google_analytics_tracker = Tracker.create(
     settings.GOOGLE_ANALYTICS_TRACKING_ID,
@@ -196,30 +197,30 @@ class Search(APIView):
         return Response([])
 
 
-# class ServiceDetail(RetrieveAPIView):
-#     """
-#     Retrieve service details
-#     """
-#     queryset = Service.objects.all()
-#     serializer_class = ServiceSerializer
-#
-#     def get(self, request, *args, **kwargs):
-#         response = super(ServiceDetail, self).get(request, *args, **kwargs)
-#
-#         if response and response.data:
-#             try:
-#                 service_name = response.data['name']
-#                 organisation_name = response.data['organisation']['name']
-#                 label = '{0} ({1})'.format(service_name, organisation_name)
-#
-#                 send_ga_tracking_event(
-#                     request._request.path, 'View', 'Service', label
-#                 )
-#             except (KeyError, TypeError):
-#                 logging.warn("Did not find expected data in response to make"
-#                              " Google Analytics call", exc_info=True)
-#
-#         return response
+class OrganisationDetail(RetrieveAPIView):
+    """
+    Retrieve organisation details
+    """
+    queryset = Organisation.objects.all()
+    serializer_class = OrganisationSerializer
+
+    def get(self, request, *args, **kwargs):
+        response = super(OrganisationDetail, self).get(request, *args, **kwargs)
+
+        if response and response.data:
+            try:
+                organisation_name = response.data['name']
+                send_ga_tracking_event(
+                    request._request.path,
+                    'View',
+                    'Organisation',
+                    organisation_name
+                )
+            except (KeyError, TypeError):
+                logging.warn("Did not find expected data in response to make"
+                             " Google Analytics call", exc_info=True)
+
+        return response
 
 
 # class ServiceReportIncorrectInformation(APIView):

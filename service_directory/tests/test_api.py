@@ -280,7 +280,7 @@ class SearchTestCase(TestCase):
         self.assertEqual(2, len(response.data))
 
 
-class ServiceDetailTestCase(TestCase):
+class OrganisationDetailTestCase(TestCase):
     client_class = APIClient
 
     @classmethod
@@ -304,18 +304,12 @@ class ServiceDetailTestCase(TestCase):
             location=Point(18.505496, -33.891937, srid=4326)
         )
         cls.org.full_clean()  # force model validation to happen
-
-        # cls.service = Service.objects.create(
-        #     name='Test Service',
-        #     organisation=cls.org
-        # )
-        # cls.service.full_clean()  # force model validation to happen
-        # cls.service.categories.add(cls.category)
-        # cls.service.keywords.add(cls.keyword)
+        cls.org.categories.add(cls.category)
+        cls.org.keywords.add(cls.keyword)
 
     def test_get(self):
         response = self.client.get(
-            '/api/service/{0}/'.format(self.service.id),
+            '/api/organisation/{0}/'.format(self.org.id),
             format='json'
         )
 
@@ -323,44 +317,46 @@ class ServiceDetailTestCase(TestCase):
             {
                 "id":%s,
                 "name":"%s",
+                "about":"",
+                "address":"",
+                "telephone":"",
+                "email":"",
+                "web":"",
                 "verified_as":"",
                 "age_range_min":null,
                 "age_range_max":null,
-                "availability_hours":"",
-                "organisation":
+                "opening_hours":"",
+                "location":"%s",
+                "country":
                     {
                         "id":%s,
-                        "name":"Test Organisation",
-                        "about":"",
-                        "address":"",
-                        "telephone":"",
-                        "email":"",
-                        "web":"",
-                        "location":"SRID=4326;\
-POINT (18.5054960000000008 -33.8919369999999986)",
-                        "country":%s
+                        "name":"%s",
+                        "iso_code":"%s"
                     },
                 "categories":[
                     {
                         "id":%s,
-                        "name":"Test Category",
-                        "show_on_home_page":false
+                        "name":"%s",
+                        "show_on_home_page":%s
                     }
                 ],
                 "keywords":[
                     {
                         "id":%s,
-                        "name":"test",
-                        "show_on_home_page":false,
+                        "name":"%s",
+                        "show_on_home_page":%s,
                         "categories":[
                             %s
                         ]
                     }
                 ]
             }
-        ''' % (self.service.id, self.service.name, self.org.id,
-               self.country.id, self.category.id, self.keyword.id,
-               self.category.id)
+        ''' % (self.org.id, self.org.name, self.org.location,
+               self.country.id, self.country.name, self.country.iso_code,
+               self.category.id, self.category.name,
+               str(self.category.show_on_home_page).lower(),
+               self.keyword.id, self.keyword.name,
+               str(self.keyword.show_on_home_page).lower(), self.category.id)
 
         self.assertJSONEqual(response.content, expected_response_content)
 

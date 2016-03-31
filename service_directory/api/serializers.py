@@ -18,15 +18,6 @@ class KeywordSerializer(serializers.ModelSerializer):
         model = Keyword
 
 
-# class ServiceSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         # Swagger does not deal well with NestedSerializer (ie: depth attr)
-#         # https://github.com/marcgibbons/django-rest-swagger/issues/398
-#         # Explicitly defining the descendant serializers would solve it
-#         model = Service
-#         depth = 1
-
-
 class OrganisationSummarySerializer(serializers.ModelSerializer):
     distance = serializers.CharField()
 
@@ -49,6 +40,15 @@ class OrganisationSummarySerializer(serializers.ModelSerializer):
             else None
 
         return d
+
+
+class OrganisationSerializer(serializers.ModelSerializer):
+    class Meta:
+        # Swagger does not deal well with NestedSerializer (ie: depth attr)
+        # https://github.com/marcgibbons/django-rest-swagger/issues/398
+        # Explicitly defining the descendant serializers would solve it
+        model = Organisation
+        depth = 1
 
 
 # class ServiceIncorrectInformationReportSerializer(serializers.ModelSerializer):
