@@ -18,8 +18,8 @@ urlpatterns = [
         views.OrganisationReportIncorrectInformation.as_view()),
     url(r'^organisation/(?P<pk>[0-9]+)/rate/$',
         views.OrganisationRate.as_view()),
-    url(r'^service/sms/$',
-        views.ServiceSendSMS.as_view()),
+    url(r'^organisation/sms/$',
+        views.OrganisationSendSMS.as_view()),
 
     url(r'^search_form/$', include('haystack.urls')),
 ]

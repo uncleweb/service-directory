@@ -65,13 +65,13 @@ class OrganisationRatingSerializer(serializers.ModelSerializer):
         read_only_fields = ('organisation',)
 
 
-class ServiceSendSMSRequestSerializer(serializers.Serializer):
+class OrganisationSendSMSRequestSerializer(serializers.Serializer):
     # TODO: add validation for cell_number field
     # http://www.django-rest-framework.org/api-guide/serializers/#validation
     cell_number = serializers.CharField()
-    service_url = serializers.URLField()
+    organisation_url = serializers.URLField()
     your_name = serializers.CharField(required=False)
 
 
-class ServiceSendSMSResponseSerializer(serializers.Serializer):
+class OrganisationSendSMSResponseSerializer(serializers.Serializer):
     result = serializers.BooleanField()

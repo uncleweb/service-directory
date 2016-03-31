@@ -15,10 +15,10 @@ from service_directory.api.haystack_elasticsearch_raw_query.\
 from service_directory.api.models import Keyword, Category, Organisation
 from service_directory.api.serializers import\
     HomePageCategoryKeywordGroupingSerializer, \
-    KeywordSerializer, ServiceSendSMSRequestSerializer, \
-    ServiceSendSMSResponseSerializer, OrganisationSummarySerializer, \
+    KeywordSerializer, OrganisationSummarySerializer, \
     OrganisationSerializer, OrganisationIncorrectInformationReportSerializer, \
-    OrganisationRatingSerializer
+    OrganisationRatingSerializer, OrganisationSendSMSRequestSerializer, \
+    OrganisationSendSMSResponseSerializer
 
 google_analytics_tracker = Tracker.create(
     settings.GOOGLE_ANALYTICS_TRACKING_ID,
@@ -290,16 +290,18 @@ class OrganisationRate(APIView):
                         status=status.HTTP_201_CREATED)
 
 
-class ServiceSendSMS(APIView):
+class OrganisationSendSMS(APIView):
     """
-    Send an SMS to a supplied cell_number with a supplied service_url
+    Send an SMS to a supplied cell_number with a supplied organisation_url
     ---
     POST:
-         request_serializer: ServiceSendSMSRequestSerializer
-         response_serializer: ServiceSendSMSResponseSerializer
+         request_serializer: OrganisationSendSMSRequestSerializer
+         response_serializer: OrganisationSendSMSResponseSerializer
     """
     def post(self, request, *args, **kwargs):
-        request_serializer = ServiceSendSMSRequestSerializer(data=request.data)
+        request_serializer = OrganisationSendSMSRequestSerializer(
+            data=request.data
+        )
 
         request_serializer.is_valid(raise_exception=True)
 
@@ -316,12 +318,12 @@ class ServiceSendSMS(APIView):
             if 'your_name' in request_serializer.validated_data:
                 message = '{0} has sent you a link: {1}'.format(
                     request_serializer.validated_data['your_name'],
-                    request_serializer.validated_data['service_url']
+                    request_serializer.validated_data['organisation_url']
                 )
                 analytics_label = 'send'
             else:
                 message = 'You have sent yourself a link: {0}'.format(
-                    request_serializer.validated_data['service_url']
+                    request_serializer.validated_data['organisation_url']
                 )
                 analytics_label = 'save'
 
@@ -330,19 +332,19 @@ class ServiceSendSMS(APIView):
                 message
             )
 
-            response_serializer = ServiceSendSMSResponseSerializer(
+            response_serializer = OrganisationSendSMSResponseSerializer(
                 data={'result': True}
             )
         except:
             logging.error("Failed to send SMS", exc_info=True)
-            response_serializer = ServiceSendSMSResponseSerializer(
+            response_serializer = OrganisationSendSMSResponseSerializer(
                 data={'result': False}
             )
 
         send_ga_tracking_event(
             request._request.path,
             'SMS',
-            request_serializer.validated_data['service_url'],
+            request_serializer.validated_data['organisation_url'],
             analytics_label
         )
 
