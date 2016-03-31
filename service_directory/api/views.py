@@ -12,11 +12,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from service_directory.api.haystack_elasticsearch_raw_query.\
     custom_elasticsearch import ConfigurableSearchQuerySet
-from service_directory.api.models import Keyword, Category
+from service_directory.api.models import Keyword, Category, Organisation
 from service_directory.api.serializers import\
     HomePageCategoryKeywordGroupingSerializer, \
     KeywordSerializer, ServiceSendSMSRequestSerializer, \
-    ServiceSendSMSResponseSerializer
+    ServiceSendSMSResponseSerializer, OrganisationSummarySerializer
 
 google_analytics_tracker = Tracker.create(
     settings.GOOGLE_ANALYTICS_TRACKING_ID,
@@ -105,90 +105,95 @@ class KeywordList(ListAPIView):
         return queryset
 
 
-# class ServiceLookup(APIView):
-#     """
-#     Query services by keyword and/or location
-#     ---
-#     GET:
-#         parameters:
-#             - name: keyword
-#               type: string
-#               paramType: query
-#             - name: near
-#               description: latitude,longitude
-#               type: string
-#               paramType: query
-#             - name: place_name
-#               description: only used for analytics purposes
-#               type: string
-#               paramType: query
-#         response_serializer: ServiceSummarySerializer
-#     """
-#     def get(self, request):
-#         keyword = None
-#         point = None
-#         place_name = None
-#
-#         if 'keyword' in request.query_params:
-#             keyword = request.query_params['keyword'].strip()
-#
-#         if 'near' in request.query_params:
-#             latlng = request.query_params['near'].strip()
-#             lat, lng = latlng.split(',')
-#             lat = float(lat)
-#             lng = float(lng)
-#             point = Point(lng, lat, srid=4326)
-#
-#         if 'place_name' in request.query_params:
-#             place_name = request.query_params['place_name'].strip()
-#
-#         send_ga_tracking_event(
-#             request._request.path, 'Search', keyword or '', place_name or ''
-#         )
-#
-#         sqs = ConfigurableSearchQuerySet().models(Service)
-#
-#         if keyword:
-#             query = {
-#                 "match": {
-#                     "text": {
-#                         "query": keyword,
-#                         "fuzziness": "AUTO"
-#                     }
-#                 }
-#             }
-#             sqs = sqs.custom_query(query)
-#
-#         if point:
-#             sqs = sqs.distance('location', point).order_by('distance')
-#
-#         # fetch all result objects and limit to 20 results
-#         sqs = sqs.load_all()[:20]
-#
-#         service_distance_tuples = []
-#         try:
-#             service_distance_tuples = [
-#                 (
-#                     result.object,
-#                     result.distance if hasattr(result, 'distance') else None
-#                 )
-#                 for result in sqs
-#             ]
-#         except AttributeError:
-#             logging.warn('The ElasticSearch index is likely out of sync with'
-#                          ' the database. You should run the `rebuild_index`'
-#                          ' management command.')
-#
-#         for service, distance in service_distance_tuples:
-#             if distance is not None:
-#                 service.distance = '{0:.2f}km'.format(distance.km)
-#
-#         if service_distance_tuples:
-#             services = zip(*service_distance_tuples)[0]
-#             serializer = ServiceSummarySerializer(services, many=True)
-#             return Response(serializer.data)
-#
-#         return Response([])
+class Search(APIView):
+    """
+    Search for organisations by search term and/or location.
+    If location coordinates are supplied then results are ordered ascending
+    by distance.
+    ---
+    GET:
+        parameters:
+            - name: search_term
+              type: string
+              paramType: query
+            - name: location
+              description: latitude,longitude
+              type: string
+              paramType: query
+            - name: place_name
+              description: only used for analytics purposes
+              type: string
+              paramType: query
+        response_serializer: OrganisationSummarySerializer
+    """
+    def get(self, request):
+        search_term = None
+        point = None
+        place_name = None
+
+        if 'search_term' in request.query_params:
+            search_term = request.query_params['search_term'].strip()
+
+        if 'location' in request.query_params:
+            latlng = request.query_params['location'].strip()
+            lat, lng = latlng.split(',')
+            lat = float(lat)
+            lng = float(lng)
+            point = Point(lng, lat, srid=4326)
+
+        if 'place_name' in request.query_params:
+            place_name = request.query_params['place_name'].strip()
+
+        send_ga_tracking_event(
+            request._request.path,
+            'Search',
+            search_term or '',
+            place_name or ''
+        )
+
+        sqs = ConfigurableSearchQuerySet().models(Organisation)
+
+        if search_term:
+            query = {
+                "match": {
+                    "text": {
+                        "query": search_term,
+                        "fuzziness": "AUTO"
+                    }
+                }
+            }
+            sqs = sqs.custom_query(query)
+
+        if point:
+            sqs = sqs.distance('location', point).order_by('distance')
+
+        # fetch all result objects and limit to 20 results
+        sqs = sqs.load_all()[:20]
+
+        organisation_distance_tuples = []
+        try:
+            organisation_distance_tuples = [
+                (
+                    result.object,
+                    result.distance if hasattr(result, 'distance') else None
+                )
+                for result in sqs
+            ]
+        except AttributeError:
+            logging.warn('The ElasticSearch index is likely out of sync with'
+                         ' the database. You should run the `rebuild_index`'
+                         ' management command.')
+
+        for organisation, distance in organisation_distance_tuples:
+            if distance is not None:
+                organisation.distance = '{0:.2f}km'.format(distance.km)
+
+        if organisation_distance_tuples:
+            services = zip(*organisation_distance_tuples)[0]
+            serializer = OrganisationSummarySerializer(services, many=True)
+            return Response(serializer.data)
+
+        return Response([])
 
 
 # class ServiceDetail(RetrieveAPIView):

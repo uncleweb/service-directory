@@ -12,7 +12,7 @@ from pytz import utc
 from rest_framework.test import APIClient
 from service_directory.api.models import Country, Category, Keyword,\
     Organisation
-# from service_directory.api.search_indexes import ServiceIndex
+from service_directory.api.search_indexes import OrganisationIndex
 
 
 def reset_haystack_index():
@@ -26,10 +26,10 @@ def reset_haystack_index():
     search_backend.clear()
 
     # this sets up the required mappings for us
-    # search_backend.update(ServiceIndex(), [])
+    search_backend.update(OrganisationIndex(), [])
 
 
-class ServiceLookupTestCase(TestCase):
+class SearchTestCase(TestCase):
     client_class = APIClient
 
     @classmethod
@@ -79,6 +79,11 @@ class ServiceLookupTestCase(TestCase):
             location=Point(18.418231, -33.921859, srid=4326)
         )
         cls.org_cbmh.full_clean()  # force model validation to happen
+        cls.org_cbmh.categories.add(cls.category)
+        cls.org_cbmh.keywords.add(
+            cls.keyword_test, cls.keyword_heart, cls.keyword_transplant,
+            cls.keyword_trauma
+        )
 
         cls.org_khc = Organisation.objects.create(
             name='Kingsbury Hospital Claremont',
@@ -86,6 +91,10 @@ class ServiceLookupTestCase(TestCase):
             location=Point(18.469060, -33.986375, srid=4326)
         )
         cls.org_khc.full_clean()  # force model validation to happen
+        cls.org_khc.categories.add(cls.category)
+        cls.org_khc.keywords.add(
+            cls.keyword_test, cls.keyword_hiv, cls.keyword_aids
+        )
 
         cls.org_cmc = Organisation.objects.create(
             name='Constantiaberg Medi Clinic',
@@ -93,37 +102,10 @@ class ServiceLookupTestCase(TestCase):
             location=Point(18.461260, -34.026629, srid=4326)
         )
         cls.org_cmc.full_clean()  # force model validation to happen
-
-        # test_service_1 = Service.objects.create(
-        #     name='Surgery',
-        #     organisation=cls.org_cbmh
-        # )
-        # test_service_1.full_clean()  # force model validation to happen
-        # test_service_1.categories.add(cls.category)
-        # test_service_1.keywords.add(
-        #     cls.keyword_test, cls.keyword_heart, cls.keyword_transplant,
-        #     cls.keyword_trauma
-        # )
-        #
-        # test_service_2 = Service.objects.create(
-        #     name='Free HIV Test',
-        #     organisation=cls.org_khc
-        # )
-        # test_service_2.full_clean()  # force model validation to happen
-        # test_service_2.categories.add(cls.category)
-        # test_service_2.keywords.add(
-        #     cls.keyword_test, cls.keyword_hiv, cls.keyword_aids
-        # )
-        #
-        # test_service_3 = Service.objects.create(
-        #     name='A&E',
-        #     organisation=cls.org_cmc
-        # )
-        # test_service_3.full_clean()  # force model validation to happen
-        # test_service_3.categories.add(cls.category)
-        # test_service_3.keywords.add(
-        #     cls.keyword_test, cls.keyword_trauma, cls.keyword_accident
-        # )
+        cls.org_cmc.categories.add(cls.category)
+        cls.org_cmc.keywords.add(
+            cls.keyword_test, cls.keyword_trauma, cls.keyword_accident
+        )
 
         # Usually the middleware is responsible for doing this
         # See HaystackBatchFlushMiddleware & BatchingSignalProcessor
@@ -136,124 +118,115 @@ class ServiceLookupTestCase(TestCase):
         signal_processor.flush_changes()
 
     def test_get_without_parameters(self):
-        response = self.client.get('/api/service_lookup/', format='json')
+        response = self.client.get('/api/search/', format='json')
 
         self.assertEqual(3, len(response.data))
 
-    def test_get_with_keyword_parameter(self):
+    def test_get_with_search_term_parameter(self):
         response = self.client.get(
-            '/api/service_lookup/',
-            {'keyword': 'test'},
+            '/api/search/',
+            {'search_term': 'test'},
             format='json'
         )
         self.assertEqual(3, len(response.data))
 
         response = self.client.get(
-            '/api/service_lookup/',
-            {'keyword': 'heart'},
+            '/api/search/',
+            {'search_term': 'heart'},
             format='json'
         )
         self.assertEqual(1, len(response.data))
 
         response = self.client.get(
-            '/api/service_lookup/',
-            {'keyword': 'transplant'},
+            '/api/search/',
+            {'search_term': 'transplant'},
             format='json'
         )
         self.assertEqual(1, len(response.data))
 
         response = self.client.get(
-            '/api/service_lookup/',
-            {'keyword': 'trauma'},
+            '/api/search/',
+            {'search_term': 'trauma'},
             format='json'
         )
         self.assertEqual(2, len(response.data))
 
         response = self.client.get(
-            '/api/service_lookup/',
-            {'keyword': 'hiv'},
+            '/api/search/',
+            {'search_term': 'hiv'},
             format='json'
         )
         self.assertEqual(1, len(response.data))
 
         response = self.client.get(
-            '/api/service_lookup/',
-            {'keyword': 'aids'},
+            '/api/search/',
+            {'search_term': 'aids'},
             format='json'
         )
         self.assertEqual(1, len(response.data))
 
         response = self.client.get(
-            '/api/service_lookup/',
-            {'keyword': 'accident'},
+            '/api/search/',
+            {'search_term': 'accident'},
             format='json'
         )
         self.assertEqual(1, len(response.data))
 
-    def test_get_with_near_parameter(self):
+    def test_get_with_location_parameter(self):
         # -33.921387, 18.424101 - Adderley Street outside Cape Town station
         response = self.client.get(
-            '/api/service_lookup/',
-            {'near': '-33.921387,18.424101'},
+            '/api/search/',
+            {'location': '-33.921387,18.424101'},
             format='json'
         )
 
-        # we should get all 3 services, ordered from closest to farthest
+        # we should get all 3 organisations, ordered from closest to farthest
         # Christiaan Barnard Memorial Hospital is closest, followed by
         # Kingsbury Hospital Claremont and then Constantiaberg Medi Clinic
         self.assertEqual(3, len(response.data))
 
-        self.assertEqual('Surgery', response.data[0]['name'])
-        self.assertListEqual(['test', 'heart', 'transplant', 'trauma'],
+        # Netcare Christiaan Barnard Memorial Hospital
+        self.assertEqual(self.org_cbmh.name, response.data[0]['name'])
+        self.assertListEqual([kw.name for kw in self.org_cbmh.keywords.all()],
                              response.data[0]['keywords'])
-        self.assertEqual('Netcare Christiaan Barnard Memorial Hospital',
-                         response.data[0]['organisation']['name'])
 
-        self.assertEqual('Free HIV Test', response.data[1]['name'])
-        self.assertListEqual(['test', 'hiv', 'aids'],
+        self.assertEqual(self.org_khc.name, response.data[1]['name'])
+        self.assertListEqual([kw.name for kw in self.org_khc.keywords.all()],
                              response.data[1]['keywords'])
-        self.assertEqual('Kingsbury Hospital Claremont',
-                         response.data[1]['organisation']['name'])
 
-        self.assertEqual('A&E', response.data[2]['name'])
-        self.assertListEqual(['test', 'trauma', 'accident'],
+        self.assertEqual(self.org_cmc.name, response.data[2]['name'])
+        self.assertListEqual([kw.name for kw in self.org_cmc.keywords.all()],
                              response.data[2]['keywords'])
-        self.assertEqual('Constantiaberg Medi Clinic',
-                         response.data[2]['organisation']['name'])
 
-    def test_get_with_keyword_and_near_parameters(self):
+    def test_get_with_search_term_and_location_parameters(self):
         # -33.921387, 18.424101 - Adderley Street outside Cape Town station
         response = self.client.get(
-            '/api/service_lookup/',
+            '/api/search/',
             {
-                'keyword': 'trauma',
-                'near': '-33.921387,18.424101'
+                'search_term': 'trauma',
+                'location': '-33.921387,18.424101'
             },
             format='json'
         )
 
-        # we should get 2 services, ordered from closest to farthest
+        # we should get 2 organisations, ordered from closest to farthest
         # Christiaan Barnard Memorial Hospital is closest
         self.assertEqual(2, len(response.data))
 
-        self.assertEqual('Surgery', response.data[0]['name'])
-        self.assertListEqual(['test', 'heart', 'transplant', 'trauma'],
+        self.assertEqual(self.org_cbmh.name, response.data[0]['name'])
+        self.assertListEqual([kw.name for kw in self.org_cbmh.keywords.all()],
                              response.data[0]['keywords'])
-        self.assertEqual('Netcare Christiaan Barnard Memorial Hospital',
-                         response.data[0]['organisation']['name'])
 
-        self.assertEqual('A&E', response.data[1]['name'])
-        self.assertListEqual(['test', 'trauma', 'accident'],
+        self.assertEqual(self.org_cmc.name, response.data[1]['name'])
+        self.assertListEqual([kw.name for kw in self.org_cmc.keywords.all()],
                              response.data[1]['keywords'])
-        self.assertEqual('Constantiaberg Medi Clinic',
-                         response.data[1]['organisation']['name'])
 
     def test_fuzzy_matching(self):
         # match on keyword and category name
         response = self.client.get(
-            '/api/service_lookup/',
+            '/api/search/',
             {
-                'keyword': 'testt'
+                'search_term': 'testt'
             },
             format='json'
         )
@@ -262,23 +235,21 @@ class ServiceLookupTestCase(TestCase):
 
         # match on keyword name
         response = self.client.get(
-            '/api/service_lookup/',
+            '/api/search/',
             {
-                'keyword': 'aid'
+                'search_term': 'aid'
             },
             format='json'
         )
 
         self.assertEqual(1, len(response.data))
-        self.assertEqual('Free HIV Test', response.data[0]['name'])
-        self.assertEqual('Kingsbury Hospital Claremont',
-                         response.data[0]['organisation']['name'])
+        self.assertEqual(self.org_khc.name, response.data[0]['name'])
 
         # match on category name
         response = self.client.get(
-            '/api/service_lookup/',
+            '/api/search/',
             {
-                'keyword': 'category'
+                'search_term': 'category'
             },
             format='json'
         )
@@ -287,44 +258,26 @@ class ServiceLookupTestCase(TestCase):
 
         # match on org name
         response = self.client.get(
-            '/api/service_lookup/',
+            '/api/search/',
             {
-                'keyword': 'med'
+                'search_term': 'med'
             },
             format='json'
         )
 
         self.assertEqual(1, len(response.data))
-        self.assertEqual('A&E', response.data[0]['name'])
-        self.assertEqual('Constantiaberg Medi Clinic',
-                         response.data[0]['organisation']['name'])
+        self.assertEqual(self.org_cmc.name, response.data[0]['name'])
 
         # match on org name
         response = self.client.get(
-            '/api/service_lookup/',
+            '/api/search/',
             {
-                'keyword': 'hospice'
+                'search_term': 'hospice'
             },
             format='json'
         )
 
         self.assertEqual(2, len(response.data))
-
-
-class ServiceLookupWithoutDataTestCase(TestCase):
-    client_class = APIClient
-
-    @classmethod
-    def setUpTestData(cls):
-        reset_haystack_index()
-
-    def test_get_without_parameters(self):
-        # this is here purely to achieve 100% coverage
-        # it tests the single statement that is otherwise missed in
-        # ServiceLookup.get() - the last statement: return Response([])
-        response = self.client.get('/api/service_lookup/', format='json')
-
-        self.assertEqual(0, len(response.data))
 
 
 class ServiceDetailTestCase(TestCase):

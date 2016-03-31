@@ -12,7 +12,7 @@ urlpatterns = [
 
     url(r'^keywords/$', views.KeywordList.as_view()),
 
-    # url(r'^service_lookup/$', views.ServiceLookup.as_view()),
+    url(r'^search/$', views.Search.as_view()),
     # url(r'^service/(?P<pk>[0-9]+)/$', views.ServiceDetail.as_view()),
     # url(r'^service/(?P<pk>[0-9]+)/report/$',
     #     views.ServiceReportIncorrectInformation.as_view()),
@@ -21,5 +21,5 @@ urlpatterns = [
     url(r'^service/sms/$',
         views.ServiceSendSMS.as_view()),
 
-    url(r'^search/', include('haystack.urls')),
+    url(r'^search_form/$', include('haystack.urls')),
 ]

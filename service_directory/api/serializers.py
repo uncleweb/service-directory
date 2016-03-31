@@ -28,36 +28,27 @@ class KeywordSerializer(serializers.ModelSerializer):
 
 
 class OrganisationSummarySerializer(serializers.ModelSerializer):
+    distance = serializers.CharField()
+
     class Meta:
         model = Organisation
-        fields = ('id', 'name', 'address')
+        fields = ('id', 'name', 'address', 'keywords', 'distance')
 
+    # Note: Strictly speaking nothing above this comment is required for the
+    # serializer to work, however it helps Swagger to work out what the
+    # response will look like
 
-# class ServiceSummarySerializer(serializers.ModelSerializer):
-#     organisation = OrganisationSummarySerializer()
-#     distance = serializers.CharField()
-#
-#     class Meta:
-#         model = Service
-#         fields = ('id', 'name', 'keywords', 'organisation', 'distance')
-#
-#     # Note: Strictly speaking nothing above this comment is required for the
-#     # serializer to work, however it helps Swagger to work out what the
-#     # response will look like
-#
-#     def to_representation(self, instance):
-#         d = OrderedDict()
-#
-#         d['id'] = instance.id
-#         d['name'] = instance.name
-#         d['keywords'] = [keyword.name for keyword in instance.keywords.all()]
-#         d['organisation'] = OrganisationSummarySerializer(
-#             instance.organisation
-#         ).data
-#         d['distance'] = instance.distance if hasattr(instance, 'distance')\
-#             else None
-#
-#         return d
+    def to_representation(self, instance):
+        d = OrderedDict()
+
+        d['id'] = instance.id
+        d['name'] = instance.name
+        d['address'] = instance.address
+        d['keywords'] = [keyword.name for keyword in instance.keywords.all()]
+        d['distance'] = instance.distance if hasattr(instance, 'distance')\
+            else None
+
+        return d
 
 
 # class ServiceIncorrectInformationReportSerializer(serializers.ModelSerializer):
