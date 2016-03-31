@@ -426,7 +426,7 @@ class OrganisationReportIncorrectInformationTestCase(TestCase):
         )
 
 
-class ServiceRateTestCase(TestCase):
+class OrganisationRateTestCase(TestCase):
     client_class = APIClient
 
     @classmethod
@@ -444,15 +444,9 @@ class ServiceRateTestCase(TestCase):
         )
         cls.org.full_clean()  # force model validation to happen
 
-        # cls.service = Service.objects.create(
-        #     name='Test Service',
-        #     organisation=cls.org
-        # )
-        # cls.service.full_clean()  # force model validation to happen
-
     def test_post(self):
         response = self.client.post(
-            '/api/service/{0}/rate/'.format(self.service.id),
+            '/api/organisation/{0}/rate/'.format(self.org.id),
             {
                 'rating': 'poor'
             },
@@ -478,9 +472,9 @@ class ServiceRateTestCase(TestCase):
                 "id":1,
                 "rated_at":"replaced",
                 "rating":"poor",
-                "service":%s
+                "organisation":%s
             }
-        ''' % (self.service.id,)
+        ''' % (self.org.id,)
 
         self.assertJSONEqual(modified_response_content,
                              expected_response_content)

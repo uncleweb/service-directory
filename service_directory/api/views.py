@@ -17,7 +17,8 @@ from service_directory.api.serializers import\
     HomePageCategoryKeywordGroupingSerializer, \
     KeywordSerializer, ServiceSendSMSRequestSerializer, \
     ServiceSendSMSResponseSerializer, OrganisationSummarySerializer, \
-    OrganisationSerializer, OrganisationIncorrectInformationReportSerializer
+    OrganisationSerializer, OrganisationIncorrectInformationReportSerializer, \
+    OrganisationRatingSerializer
 
 google_analytics_tracker = Tracker.create(
     settings.GOOGLE_ANALYTICS_TRACKING_ID,
@@ -246,44 +247,47 @@ class OrganisationReportIncorrectInformation(APIView):
         serializer.save(organisation=organisation)
 
         send_ga_tracking_event(
-            request._request.path, 'Feedback',
-            'OrganisationIncorrectInformationReport', organisation.name
+            request._request.path,
+            'Feedback',
+            'OrganisationIncorrectInformationReport',
+            organisation.name
         )
 
         return Response(serializer.data,
                         status=status.HTTP_201_CREATED)
 
 
-# class ServiceRate(APIView):
-#     """
-#     Rate the quality of a service
-#     ---
-#     POST:
-#          serializer: ServiceRatingSerializer
-#     """
-#     def post(self, request, *args, **kwargs):
-#         service_id = int(kwargs.pop('pk'))
-#
-#         try:
-#             service = Service.objects.get(id=service_id)
-#         except Service.DoesNotExist:
-#             raise Http404
-#
-#         serializer = ServiceRatingSerializer(
-#             data=request.data
-#         )
-#
-#         serializer.is_valid(raise_exception=True)
-#         serializer.save(service=service)
-#
-#         label = '{0} ({1})'.format(service.name, service.organisation.name)
-#         send_ga_tracking_event(
-#             request._request.path, 'Feedback',
-#             'ServiceRating', label
-#         )
-#
-#         return Response(serializer.data,
-#                         status=status.HTTP_201_CREATED)
+class OrganisationRate(APIView):
+    """
+    Rate the quality of an organisation
+    ---
+    POST:
+         serializer: OrganisationRatingSerializer
+    """
+    def post(self, request, *args, **kwargs):
+        organisation_id = int(kwargs.pop('pk'))
+
+        try:
+            organisation = Organisation.objects.get(id=organisation_id)
+        except Organisation.DoesNotExist:
+            raise Http404
+
+        serializer = OrganisationRatingSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(raise_exception=True)
+        serializer.save(organisation=organisation)
+
+        send_ga_tracking_event(
+            request._request.path,
+            'Feedback',
+            'OrganisationRating',
+            organisation.name
+        )
+
+        return Response(serializer.data,
+                        status=status.HTTP_201_CREATED)
 
 
 class ServiceSendSMS(APIView):
