@@ -136,7 +136,9 @@ class OrganisationTestCase(TestCase):
         self.assertEqual('Test Org', organisations[0].name)
         self.assertEqual('Test Org', organisations[0].__unicode__())
 
-        self.assertTrue('Test Category' in organisations[0].formatted_categories())
+        self.assertTrue(
+            'Test Category' in organisations[0].formatted_categories()
+        )
         self.assertTrue('test' in organisations[0].formatted_keywords())
 
     def test_update(self):

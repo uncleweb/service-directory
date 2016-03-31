@@ -206,7 +206,9 @@ class OrganisationDetail(RetrieveAPIView):
     serializer_class = OrganisationSerializer
 
     def get(self, request, *args, **kwargs):
-        response = super(OrganisationDetail, self).get(request, *args, **kwargs)
+        response = super(OrganisationDetail, self).get(
+            request, *args, **kwargs
+        )
 
         if response and response.data:
             try:
