@@ -320,6 +320,7 @@ class OrganisationDetailTestCase(TestCase):
                 "about":"",
                 "address":"",
                 "telephone":"",
+                "emergency_telephone":"",
                 "email":"",
                 "web":"",
                 "verified_as":"",
@@ -349,7 +350,8 @@ class OrganisationDetailTestCase(TestCase):
                             %s
                         ]
                     }
-                ]
+                ],
+                "facility_code":""
             }
         ''' % (self.org.id, self.org.name, self.org.location,
                self.country.id, self.country.name, self.country.iso_code,
