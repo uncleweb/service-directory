@@ -18,9 +18,9 @@ INSERT INTO "api_category" (name,show_on_home_page) VALUES('Health',True) RETURN
 INSERT INTO "api_category" (name,show_on_home_page) VALUES('Education',False) RETURNING id INTO education_category_id;
 
 --keyword
-INSERT INTO "api_keyword" (name,show_on_home_page) VALUES('test',True) RETURNING id INTO test_keyword_id;
+INSERT INTO "api_keyword" (name,show_on_home_page) VALUES('Test',True) RETURNING id INTO test_keyword_id;
 INSERT INTO "api_keyword" (name,show_on_home_page) VALUES('HIV',True) RETURNING id INTO hiv_keyword_id;
-INSERT INTO "api_keyword" (name,show_on_home_page) VALUES('tutoring',True) RETURNING id INTO tutoring_keyword_id;
+INSERT INTO "api_keyword" (name,show_on_home_page) VALUES('Tutoring',True) RETURNING id INTO tutoring_keyword_id;
 
 --keyword_categories
 INSERT INTO "api_keyword_categories" (keyword_id,category_id) VALUES(test_keyword_id,health_category_id);

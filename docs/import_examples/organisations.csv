@@ -1,2 +1,2 @@
-id,name,about,address,telephone,email,web,country,location
-1,"Orphan Puppies","We're amazing","123 Place Rd","3209123","admin@test.com","http://www.google.com","South Africa","-33.891,18.505"
+name,about,address,telephone,email,web,verified_as,age_range_min,age_range_max,opening_hours,country,location,categories,keywords
+"Healthcare Co","Something about them","202 The Gatehouse, Century Way, Century City","0215522159","blueteam@labs.ws","http://www.afrolabs.co.za","Healthcare Provider",0,99,"9am to 5pm on weekdays","South Africa","-33.891937,18.505496","Health,Education","HIV,Test"

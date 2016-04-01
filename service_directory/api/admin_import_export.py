@@ -32,6 +32,8 @@ class CountryResource(resources.ModelResource):
         model = Country
         import_id_fields = ('name',)
         fields = ('name', 'iso_code',)
+        skip_unchanged = True
+        report_skipped = True
 
 
 class CategoryResource(resources.ModelResource):
@@ -39,6 +41,8 @@ class CategoryResource(resources.ModelResource):
         model = Category
         import_id_fields = ('name',)
         fields = ('name', 'show_on_home_page',)
+        skip_unchanged = True
+        report_skipped = True
 
 
 class KeywordResource(resources.ModelResource):
@@ -80,6 +84,8 @@ class KeywordResource(resources.ModelResource):
         model = Keyword
         import_id_fields = ('name',)
         fields = ('name', 'categories', 'show_on_home_page',)
+        skip_unchanged = True
+        report_skipped = True
 
 
 class OrganisationResource(resources.ModelResource):
@@ -126,10 +132,10 @@ class OrganisationResource(resources.ModelResource):
                 db_categories_set
             )
             raise ValidationError(
-                u"Service '{0}' is being imported with "
+                u"Organisation '{0}' is being imported with "
                 u"Categories that are missing and "
                 u"need to be imported/created: {1}".format(
-                    data.get('id', u''), missing_categories)
+                    data.get('name', u''), missing_categories)
             )
 
         # check keywords
@@ -150,10 +156,10 @@ class OrganisationResource(resources.ModelResource):
                 db_keywords_set
             )
             raise ValidationError(
-                u"Service '{0}' is being imported with "
+                u"Organisation '{0}' is being imported with "
                 u"Keywords that are missing and "
                 u"need to be imported/created: {1}".format(
-                    data.get('id', u''), missing_keywords)
+                    data.get('name', u''), missing_keywords)
             )
 
         return super(OrganisationResource, self).import_obj(obj, data, dry_run)
@@ -190,6 +196,13 @@ class OrganisationResource(resources.ModelResource):
 
     class Meta:
         model = Organisation
+        import_id_fields = ('name',)
+        export_order = ('id', 'name', 'about', 'address', 'telephone', 'email',
+                        'web', 'verified_as', 'age_range_min', 'age_range_max',
+                        'opening_hours', 'country', 'location', 'categories',
+                        'keywords')
+        skip_unchanged = True
+        report_skipped = True
 
 
 class OrganisationIncorrectInformationReportResource(resources.ModelResource):
