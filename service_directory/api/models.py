@@ -59,6 +59,7 @@ class Organisation(models.Model):
 
     address = models.CharField(max_length=500, blank=True)
     telephone = models.CharField(max_length=50, blank=True)
+    emergency_telephone = models.CharField(max_length=50, blank=True)
     email = models.EmailField(blank=True)
     web = models.URLField(blank=True)
 
@@ -76,6 +77,8 @@ class Organisation(models.Model):
 
     categories = models.ManyToManyField(Category)
     keywords = models.ManyToManyField(Keyword)
+
+    facility_code = models.CharField(max_length=50, blank=True)
 
     def __unicode__(self):
         return self.name

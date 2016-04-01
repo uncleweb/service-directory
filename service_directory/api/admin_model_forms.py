@@ -5,10 +5,6 @@ from service_directory.api.models import Organisation
 
 
 class OrganisationModelForm(forms.ModelForm):
-    class Meta:
-        model = Organisation
-        fields = '__all__'
-
     location_coords = forms.CharField(
         required=False,
         label='Location coordinates',
@@ -16,6 +12,14 @@ class OrganisationModelForm(forms.ModelForm):
         ' Note that entering coordinates here overrides any location set via'
         ' the map.'
     )
+
+    class Meta:
+        model = Organisation
+        fields = ('name', 'about', 'address', 'telephone',
+                  'emergency_telephone', 'email', 'web', 'verified_as',
+                  'age_range_min', 'age_range_max', 'opening_hours',
+                  'country', 'location', 'location_coords', 'categories',
+                  'keywords', 'facility_code')
 
     def clean_location_coords(self):
         location_coords = self.cleaned_data.get('location_coords')

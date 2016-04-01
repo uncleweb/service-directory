@@ -197,10 +197,11 @@ class OrganisationResource(resources.ModelResource):
     class Meta:
         model = Organisation
         import_id_fields = ('name',)
-        export_order = ('id', 'name', 'about', 'address', 'telephone', 'email',
-                        'web', 'verified_as', 'age_range_min', 'age_range_max',
-                        'opening_hours', 'country', 'location', 'categories',
-                        'keywords')
+        export_order = ('id', 'name', 'about', 'address', 'telephone',
+                        'emergency_telephone', 'email', 'web', 'verified_as',
+                        'age_range_min', 'age_range_max', 'opening_hours',
+                        'country', 'location', 'categories', 'keywords',
+                        'facility_code')
         skip_unchanged = True
         report_skipped = True
 
