@@ -13,6 +13,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunSQL(
+            "CREATE EXTENSION IF NOT EXISTS citext;",
+            reverse_sql="DROP EXTENSION IF EXISTS citext"
+        ),
         migrations.CreateModel(
             name='Category',
             fields=[
