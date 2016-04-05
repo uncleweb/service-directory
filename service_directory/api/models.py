@@ -53,7 +53,7 @@ class Keyword(models.Model):
 
 
 class KeywordCategory(models.Model):
-    keyword = models.ForeignKey(Keyword, on_delete=models.PROTECT)
+    keyword = models.ForeignKey(Keyword)
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
 
     class Meta:
@@ -110,7 +110,7 @@ class Organisation(models.Model):
 
 
 class OrganisationCategory(models.Model):
-    organisation = models.ForeignKey(Organisation, on_delete=models.PROTECT)
+    organisation = models.ForeignKey(Organisation)
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
 
     class Meta:
@@ -119,7 +119,7 @@ class OrganisationCategory(models.Model):
 
 
 class OrganisationKeyword(models.Model):
-    organisation = models.ForeignKey(Organisation, on_delete=models.PROTECT)
+    organisation = models.ForeignKey(Organisation)
     keyword = models.ForeignKey(Keyword, on_delete=models.PROTECT)
 
     class Meta:
