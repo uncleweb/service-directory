@@ -38,7 +38,7 @@ class Category(models.Model):
 
 class Keyword(models.Model):
     name = CaseInsensitiveTextField(max_length=50, unique=True)
-    categories = models.ManyToManyField(Category)
+    categories = models.ManyToManyField(Category, through='KeywordCategory')
     show_on_home_page = models.BooleanField(default=False)
 
     def __unicode__(self):
@@ -50,6 +50,15 @@ class Keyword(models.Model):
         ]
         return ', '.join(categories)
     formatted_categories.short_description = 'Categories'
+
+
+class KeywordCategory(models.Model):
+    keyword = models.ForeignKey(Keyword, on_delete=models.PROTECT)
+    category = models.ForeignKey(Category, on_delete=models.PROTECT)
+
+    class Meta:
+        unique_together = ('keyword', 'category')
+        verbose_name_plural = 'keyword categories'
 
 
 class Organisation(models.Model):
@@ -75,8 +84,10 @@ class Organisation(models.Model):
 
     location = PointField(srid=4326)
 
-    categories = models.ManyToManyField(Category)
-    keywords = models.ManyToManyField(Keyword)
+    categories = models.ManyToManyField(Category,
+                                        through='OrganisationCategory')
+
+    keywords = models.ManyToManyField(Keyword, through='OrganisationKeyword')
 
     facility_code = models.CharField(max_length=50, blank=True)
 
@@ -96,6 +107,24 @@ class Organisation(models.Model):
         ]
         return ', '.join(keywords)
     formatted_keywords.short_description = 'Keywords'
+
+
+class OrganisationCategory(models.Model):
+    organisation = models.ForeignKey(Organisation, on_delete=models.PROTECT)
+    category = models.ForeignKey(Category, on_delete=models.PROTECT)
+
+    class Meta:
+        unique_together = ('organisation', 'category')
+        verbose_name_plural = 'organisation categories'
+
+
+class OrganisationKeyword(models.Model):
+    organisation = models.ForeignKey(Organisation, on_delete=models.PROTECT)
+    keyword = models.ForeignKey(Keyword, on_delete=models.PROTECT)
+
+    class Meta:
+        unique_together = ('organisation', 'keyword')
+        verbose_name_plural = 'organisation keywords'
 
 
 class OrganisationIncorrectInformationReport(models.Model):

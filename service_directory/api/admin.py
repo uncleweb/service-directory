@@ -1,7 +1,8 @@
 from django.contrib.gis import admin
 from import_export.admin import ImportExportMixin, ExportMixin
 from models import Country, Organisation, Category, Keyword, \
-    OrganisationIncorrectInformationReport, OrganisationRating
+    OrganisationIncorrectInformationReport, OrganisationRating, \
+    KeywordCategory, OrganisationCategory, OrganisationKeyword
 from service_directory.api.admin_import_export import CountryResource, \
     OrganisationResource, CategoryResource, KeywordResource, \
     OrganisationIncorrectInformationReportResource, OrganisationRatingResource
@@ -18,15 +19,33 @@ class CategoryModelAdmin(ImportExportMixin, admin.ModelAdmin):
     resource_class = CategoryResource
 
 
+class KeywordCategoryInlineModelAdmin(admin.TabularInline):
+    model = KeywordCategory
+    extra = 1
+
+
 class KeywordModelAdmin(ImportExportMixin, admin.ModelAdmin):
     list_display = ('name', 'formatted_categories', 'show_on_home_page')
     resource_class = KeywordResource
+    inlines = (KeywordCategoryInlineModelAdmin,)
+
+
+class OrganisationCategoryInlineModelAdmin(admin.TabularInline):
+    model = OrganisationCategory
+    extra = 1
+
+
+class OrganisationKeywordInlineModelAdmin(admin.TabularInline):
+    model = OrganisationKeyword
+    extra = 1
 
 
 class OrganisationModelAdmin(ImportExportMixin, admin.OSMGeoAdmin):
     form = OrganisationModelForm
     list_display = ('name', 'country')
     resource_class = OrganisationResource
+    inlines = (OrganisationCategoryInlineModelAdmin,
+               OrganisationKeywordInlineModelAdmin)
 
     def get_form(self, request, obj=None, **kwargs):
         form = super(OrganisationModelAdmin, self).get_form(
