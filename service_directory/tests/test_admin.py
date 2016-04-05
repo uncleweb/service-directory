@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.test import TestCase
 from service_directory.api.models import Country, Organisation, Category, \
-    Keyword
+    Keyword, KeywordCategory, OrganisationCategory, OrganisationKeyword
 
 
 class OrganisationModelFormTestCase(TestCase):
@@ -26,7 +26,11 @@ class OrganisationModelFormTestCase(TestCase):
 
         cls.keyword = Keyword.objects.create(name='test')
         cls.keyword.full_clean()  # force model validation to happen
-        cls.keyword.categories.add(cls.category)
+
+        kwc = KeywordCategory.objects.create(
+            keyword=cls.keyword, category=cls.category
+        )
+        kwc.full_clean()  # force model validation to happen
 
         cls.org_cbmh = Organisation.objects.create(
             name='Netcare Christiaan Barnard Memorial Hospital',
@@ -35,8 +39,15 @@ class OrganisationModelFormTestCase(TestCase):
         )
         cls.org_cbmh.full_clean()  # force model validation to happen
 
-        cls.org_cbmh.categories.add(cls.category)
-        cls.org_cbmh.keywords.add(cls.keyword)
+        oc = OrganisationCategory.objects.create(
+            organisation=cls.org_cbmh, category=cls.category
+        )
+        oc.full_clean()  # force model validation to happen
+
+        ok = OrganisationKeyword.objects.create(
+            organisation=cls.org_cbmh, keyword=cls.keyword
+        )
+        ok.full_clean()  # force model validation to happen
 
         cls.api_url = '/admin/api/organisation/{0}/'.format(cls.org_cbmh.id)
 
@@ -49,6 +60,7 @@ class OrganisationModelFormTestCase(TestCase):
             'about': self.org_cbmh.about,
             'address': self.org_cbmh.address,
             'telephone': self.org_cbmh.telephone,
+            'emergency_telephone': self.org_cbmh.emergency_telephone,
             'email': self.org_cbmh.email,
             'web': self.org_cbmh.web,
             'verified_as': self.org_cbmh.verified_as,
@@ -59,8 +71,33 @@ class OrganisationModelFormTestCase(TestCase):
             'opening_hours': self.org_cbmh.opening_hours,
             'country': self.org_cbmh.country_id,
             'location': self.org_cbmh.location,
-            'categories': self.category.id,
-            'keywords': self.keyword.id
+            'facility_code': self.org_cbmh.facility_code,
+
+            # fields from OrganisationCategoryInlineModelAdmin
+            'organisationcategory_set-TOTAL_FORMS': 1,
+            'organisationcategory_set-INITIAL_FORMS': 0,
+            'organisationcategory_set-MIN_NUM_FORMS': 0,
+            'organisationcategory_set-MAX_NUM_FORMS': 1000,
+            'organisationcategory_set-0-id': '',
+            'organisationcategory_set-0-organisation': self.org_cbmh.id,
+            'organisationcategory_set-0-category': '',
+            'organisationcategory_set-__prefix__-id': '',
+            'organisationcategory_set-__prefix__-organisation':
+                self.org_cbmh.id,
+            'organisationcategory_set-__prefix__-category': '',
+
+            # fields from OrganisationKeywordInlineModelAdmin
+            'organisationkeyword_set-TOTAL_FORMS': 1,
+            'organisationkeyword_set-INITIAL_FORMS': 0,
+            'organisationkeyword_set-MIN_NUM_FORMS': 0,
+            'organisationkeyword_set-MAX_NUM_FORMS': 1000,
+            'organisationkeyword_set-0-id': '',
+            'organisationkeyword_set-0-organisation': self.org_cbmh.id,
+            'organisationkeyword_set-0-keyword': '',
+            'organisationkeyword_set-__prefix__-id': '',
+            'organisationkeyword_set-__prefix__-organisation':
+                self.org_cbmh.id,
+            'organisationkeyword_set-__prefix__-keyword': '',
         }
         return data
 
