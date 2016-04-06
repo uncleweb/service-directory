@@ -8,6 +8,100 @@ from service_directory.api.models import Category, Keyword, Country, \
     Organisation, OrganisationIncorrectInformationReport, OrganisationRating
 
 
+# We're defining our own Field and ModelResource classes here to handle
+# ManyToManyFields with a manually specified intermediate table ('through'
+# attribute).
+# Source: https://github.com/django-import-export/django-import-export/
+# issues/151#issuecomment-59472728
+class ManyToManyIntermediateModelCapableField(import_export_fields.Field):
+    def is_m2m_with_intermediate_model(self, obj):
+        field = obj._meta.get_field(self.attribute)
+        return field.many_to_many and not field.rel.through._meta.auto_created
+
+    def get_intermediate_model(self, obj):
+        field = obj._meta.get_field(self.attribute)
+        IntermediateModel = field.rel.through
+        from_field_name = field.m2m_field_name()
+        to_field_name = field.rel.to.__name__.lower()
+        return IntermediateModel, from_field_name, to_field_name
+
+    def remove_old_intermediates(self, obj, related_objects,
+                                 IntermediateModel, from_field_name,
+                                 to_field_name):
+
+        imported_ids = set(ro.pk for ro in related_objects)
+        current_related_objects = getattr(obj, self.attribute).all()
+
+        for cro in current_related_objects:
+            if cro.pk not in imported_ids:
+                queryset = IntermediateModel.objects.filter(**{
+                    from_field_name: obj,
+                    to_field_name: cro
+                })
+                queryset.delete()
+
+    def ensure_current_intermediates(self, obj, related_objects,
+                                     IntermediateModel, from_field_name,
+                                     to_field_name):
+
+        for ro in related_objects:
+            attributes = {
+                from_field_name: obj,
+                to_field_name: ro
+            }
+            IntermediateModel.objects.get_or_create(**attributes)
+
+    def update_intermediates(self, obj, related_objects):
+        IntermediateModel, from_field_name, to_field_name = \
+            self.get_intermediate_model(obj)
+
+        self.remove_old_intermediates(obj, related_objects, IntermediateModel,
+                                      from_field_name, to_field_name)
+
+        self.ensure_current_intermediates(obj, related_objects,
+                                          IntermediateModel, from_field_name,
+                                          to_field_name)
+
+    def save(self, obj, data):
+        """
+        Cleans this field value and assign it to provided object.
+        """
+        if not self.readonly:
+            attrs = self.attribute.split('__')
+            for attr in attrs[:-1]:
+                obj = getattr(obj, attr, None)
+
+            if self.is_m2m_with_intermediate_model(obj):
+                self.update_intermediates(obj, self.clean(data))
+            else:
+                setattr(obj, attrs[-1], self.clean(data))
+
+
+# We're explicitly defining our ManyToManyFields on our resource classes
+# because we want to export names rather than IDs, so we don't need to use
+# this ModelResource class. You can use this class if you want to have support
+# for ManyToManyFields with a manually specified intermediate table and you
+# don't care for explicitly defining your ManyToManyFields on your resource
+# classes.
+class CustomModelResource(resources.ModelResource):
+    @classmethod
+    def field_from_django_field(self, field_name, django_field, readonly):
+        """
+        Returns a Resource Field instance for the given Django model field.
+        """
+
+        FieldWidget = self.widget_from_django_field(django_field)
+        widget_kwargs = self.widget_kwargs_for_field(field_name)
+        field = ManyToManyIntermediateModelCapableField(
+            attribute=field_name,
+            column_name=field_name,
+            widget=FieldWidget(**widget_kwargs),
+            readonly=readonly,
+            default=django_field.default,
+        )
+        return field
+
+
 class PointWidget(Widget):
     def clean(self, value):
         try:
@@ -72,7 +166,7 @@ class KeywordResource(resources.ModelResource):
 
         return super(KeywordResource, self).import_obj(obj, data, dry_run)
 
-    categories = import_export_fields.Field(
+    categories = ManyToManyIntermediateModelCapableField(
         attribute='categories',
         column_name='categories',
         widget=ManyToManyWidget(
@@ -115,20 +209,20 @@ class OrganisationResource(resources.ModelResource):
             )
 
         # check categories
-        service_category_names_set = set(
+        organisation_category_names_set = set(
             data.get('categories', u'').split(',')
         )
 
         db_categories = Category.objects.filter(
-            name__in=service_category_names_set
+            name__in=organisation_category_names_set
         )
 
         db_categories_set = set(
             [db_category.name for db_category in db_categories]
         )
 
-        if service_category_names_set != db_categories_set:
-            missing_categories = service_category_names_set.difference(
+        if organisation_category_names_set != db_categories_set:
+            missing_categories = organisation_category_names_set.difference(
                 db_categories_set
             )
             raise ValidationError(
@@ -139,20 +233,20 @@ class OrganisationResource(resources.ModelResource):
             )
 
         # check keywords
-        service_keyword_names_set = set(
+        organisation_keyword_names_set = set(
             data.get('keywords', u'').split(',')
         )
 
         db_keywords = Keyword.objects.filter(
-            name__in=service_keyword_names_set
+            name__in=organisation_keyword_names_set
         )
 
         db_keywords_set = set(
             [db_keyword.name for db_keyword in db_keywords]
         )
 
-        if service_keyword_names_set != db_keywords_set:
-            missing_keywords = service_keyword_names_set.difference(
+        if organisation_keyword_names_set != db_keywords_set:
+            missing_keywords = organisation_keyword_names_set.difference(
                 db_keywords_set
             )
             raise ValidationError(
@@ -178,7 +272,7 @@ class OrganisationResource(resources.ModelResource):
         widget=PointWidget()
     )
 
-    categories = import_export_fields.Field(
+    categories = ManyToManyIntermediateModelCapableField(
         attribute='categories',
         column_name='categories',
         widget=ManyToManyWidget(
@@ -186,7 +280,7 @@ class OrganisationResource(resources.ModelResource):
             field='name'
         ))
 
-    keywords = import_export_fields.Field(
+    keywords = ManyToManyIntermediateModelCapableField(
         attribute='keywords',
         column_name='keywords',
         widget=ManyToManyWidget(
