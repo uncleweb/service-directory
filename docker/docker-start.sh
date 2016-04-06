@@ -3,7 +3,7 @@
 cd service_directory
 set -e
 
-./manage.py migrate
+./manage.py migrate --noinput
 ./manage.py collectstatic --noinput
 ./manage.py rebuild_index --noinput
 
