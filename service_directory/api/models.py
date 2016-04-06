@@ -53,6 +53,10 @@ class Keyword(models.Model):
 
 
 class KeywordCategory(models.Model):
+    """
+    We're manually specifying the intermediate table so that we can set
+    ForeignKey attributes (specifically, on_delete)
+    """
     keyword = models.ForeignKey(Keyword)
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
 
@@ -110,6 +114,10 @@ class Organisation(models.Model):
 
 
 class OrganisationCategory(models.Model):
+    """
+    We're manually specifying the intermediate table so that we can set
+    ForeignKey attributes (specifically, on_delete)
+    """
     organisation = models.ForeignKey(Organisation)
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
 
@@ -119,6 +127,10 @@ class OrganisationCategory(models.Model):
 
 
 class OrganisationKeyword(models.Model):
+    """
+    We're manually specifying the intermediate table so that we can set
+    ForeignKey attributes (specifically, on_delete)
+    """
     organisation = models.ForeignKey(Organisation)
     keyword = models.ForeignKey(Keyword, on_delete=models.PROTECT)
 
