@@ -19,6 +19,11 @@ The following keys should be set in the django projects settings file (the value
 
 GOOGLE_ANALYTICS_TRACKING_ID = 'UA-VALIDKEY'
 
+VUMI_GO_ACCOUNT_KEY = '123abc'
+VUMI_GO_CONVERSATION_KEY = '123abc'
+VUMI_GO_API_TOKEN = '123abc'
+VUMI_GO_API_URL = 'http://go.vumi.org/api/v1/go/http_api_nostream'
+
 ideally things like the passwords and api keys should be kept out of the repository and possibly included in the
 settings through importing from a secrets file that is ignored by the version control.
 
