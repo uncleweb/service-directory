@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.gis.geos import Point
 from django.core.exceptions import ValidationError
+from django.forms.utils import ErrorList
 from service_directory.api.models import Organisation
 
 
@@ -20,6 +21,18 @@ class OrganisationModelForm(forms.ModelForm):
                   'age_range_min', 'age_range_max', 'opening_hours',
                   'country', 'location', 'location_coords', 'categories',
                   'keywords', 'facility_code')
+
+    def __init__(self, data=None, files=None, auto_id='id_%s', prefix=None,
+                 initial=None, error_class=ErrorList, label_suffix=None,
+                 empty_permitted=False, instance=None):
+        if instance:
+            initial = initial or {}
+            initial['location_coords'] = instance.location_coords
+
+        super(OrganisationModelForm, self).__init__(data, files, auto_id,
+                                                    prefix, initial,
+                                                    error_class, label_suffix,
+                                                    empty_permitted, instance)
 
     def clean_location_coords(self):
         location_coords = self.cleaned_data.get('location_coords')

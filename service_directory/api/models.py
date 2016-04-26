@@ -98,6 +98,10 @@ class Organisation(models.Model):
     def __unicode__(self):
         return self.name
 
+    @property
+    def location_coords(self):
+        return '{0}, {1}'.format(self.location.y, self.location.x)
+
     def formatted_categories(self):
         categories = [
             category.__unicode__() for category in self.categories.all()
