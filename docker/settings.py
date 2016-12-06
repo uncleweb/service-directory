@@ -27,7 +27,7 @@ HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'service_directory.api.haystack_elasticsearch_raw_query.custom_elasticsearch.ConfigurableElasticSearchEngine',
         'URL': 'http://%s:9200' % environ.get('ES_HOST', '127.0.0.1'),
-        'INDEX_NAME': 'haystack',
+        'INDEX_NAME': environ.get('HAYSTACK_INDEX_NAME', 'haystack'),
     },
 }
 
