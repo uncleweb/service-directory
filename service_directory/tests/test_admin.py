@@ -131,6 +131,13 @@ class OrganisationModelFormTestCase(TestCase):
 
         self.assertContains(response, 'Invalid coordinates')
 
+    def test_location_coords_field_validation_when_blank(self):
+        data = self.get_post_payload_for_test_organisation()
+        data['location_coords'] = ''
+
+        response = self.client.post(self.api_url, data)
+        self.assertNotContains(response, 'Invalid coordinates')
+
     def test_map_location_not_required_if_location_coords_field_empty(self):
         data = self.get_post_payload_for_test_organisation()
         del data['location']

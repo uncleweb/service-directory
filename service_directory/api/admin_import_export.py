@@ -104,6 +104,9 @@ class CustomModelResource(resources.ModelResource):
 
 class PointWidget(Widget):
     def clean(self, value):
+        if not value:
+            return value
+
         try:
             lat, lng = value.split(',')
             lat = float(lat)
