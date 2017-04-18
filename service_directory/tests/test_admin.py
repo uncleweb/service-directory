@@ -136,6 +136,7 @@ class OrganisationModelFormTestCase(TestCase):
         data['location_coords'] = ''
 
         response = self.client.post(self.api_url, data)
+        self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, 'Invalid coordinates')
 
     def test_map_location_not_required_if_location_coords_field_empty(self):
