@@ -86,7 +86,7 @@ class Organisation(models.Model):
 
     country = models.ForeignKey(Country, on_delete=models.PROTECT)
 
-    location = PointField(srid=4326)
+    location = PointField(srid=4326, blank=True, null=True)
 
     categories = models.ManyToManyField(Category,
                                         through='OrganisationCategory')

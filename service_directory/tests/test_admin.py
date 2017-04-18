@@ -131,13 +131,20 @@ class OrganisationModelFormTestCase(TestCase):
 
         self.assertContains(response, 'Invalid coordinates')
 
-    def test_map_location_required_if_location_coords_field_empty(self):
+    def test_map_location_not_required_if_location_coords_field_empty(self):
         data = self.get_post_payload_for_test_organisation()
         del data['location']
 
         response = self.client.post(self.api_url, data)
 
-        self.assertContains(response, 'No geometry value provided')
+        # if the status_code is 200 then validation for one of the fields
+        # probably failed - check the HTML response content
+        self.assertEqual(302, response.status_code)
+        self.assertTrue(
+            response._headers['location'][1].endswith(
+                '/admin/api/organisation/'
+            )
+        )
 
     def test_map_location_not_required_if_location_coords_supplied(self):
         new_lat = -33.921124
