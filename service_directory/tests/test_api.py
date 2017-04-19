@@ -276,7 +276,55 @@ class SearchTestCase(TestCase):
 
         self.assertEqual(self.org_cmc.name, response.data[2]['name'])
         self.assertListEqual([kw.name for kw in self.org_cmc.keywords.all()],
+                             response.data[2]['keyworsds'])
+
+    def test_get_with_location_parameter_org_with_no_location(self):
+        self.org_prkc = Organisation.objects.create(
+            name='Praekelt Clinic',
+            country=Country.objects.get(iso_code='ZA')
+        )
+        self.org_prkc.full_clean()  # force model validation to happen
+
+        oc = OrganisationCategory.objects.create(
+            organisation=self.org_prkc,
+            category=Category.objects.get(name='Test Category')
+        )
+        oc.full_clean()  # force model validation to happen
+
+        keyword_test = Keyword.objects.get(name='test')
+        ok = OrganisationKeyword.objects.create(
+            organisation=self.org_prkc, keyword=keyword_test
+        )
+        ok.full_clean()  # force model validation to happen
+        signal_processor.flush_changes()
+
+        # -33.921387, 18.424101 - Adderley Street outside Cape Town station
+        response = self.client.get(
+            '/api/search/',
+            {'location': '-33.921387,18.424101'},
+            format='json'
+        )
+
+        # we should get all 3 organisations, ordered from closest to farthest
+        # Christiaan Barnard Memorial Hospital is closest, followed by
+        # Kingsbury Hospital Claremont and then Constantiaberg Medi Clinic
+        self.assertEqual(4, len(response.data))
+
+        # Netcare Christiaan Barnard Memorial Hospital
+        self.assertEqual(self.org_cbmh.name, response.data[0]['name'])
+        self.assertListEqual([kw.name for kw in self.org_cbmh.keywords.all()],
+                             response.data[0]['keywords'])
+
+        self.assertEqual(self.org_khc.name, response.data[1]['name'])
+        self.assertListEqual([kw.name for kw in self.org_khc.keywords.all()],
+                             response.data[1]['keywords'])
+
+        self.assertEqual(self.org_cmc.name, response.data[2]['name'])
+        self.assertListEqual([kw.name for kw in self.org_cmc.keywords.all()],
                              response.data[2]['keywords'])
+
+        self.assertEqual(self.org_prkc.name, response.data[3]['name'])
+        self.assertIsNone(response.data[3]['distance'])
 
     def test_get_with_search_term_and_location_parameters(self):
         # -33.921387, 18.424101 - Adderley Street outside Cape Town station
