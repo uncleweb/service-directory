@@ -273,6 +273,7 @@ class SearchTestCase(TestCase):
         self.assertEqual(self.org_khc.name, response.data[1]['name'])
         self.assertListEqual([kw.name for kw in self.org_khc.keywords.all()],
                              response.data[1]['keywords'])
+
         self.assertEqual(self.org_cmc.name, response.data[2]['name'])
         self.assertListEqual([kw.name for kw in self.org_cmc.keywords.all()],
                              response.data[2]['keywords'])
