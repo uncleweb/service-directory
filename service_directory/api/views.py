@@ -187,7 +187,7 @@ class Search(APIView):
                          ' management command.')
 
         for organisation, distance in organisation_distance_tuples:
-            if distance is not None:
+            if distance is not None and distance.m != float("inf"):
                 organisation.distance = '{0:.2f}km'.format(distance.km)
 
         if organisation_distance_tuples:
