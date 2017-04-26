@@ -33,7 +33,7 @@ class SearchTestCase(TestCase):
     client_class = APIClient
 
     @classmethod
-    def setUpTestData(cls):
+    def setUp(cls):
         reset_haystack_index()
 
         cls.country = Country.objects.create(
