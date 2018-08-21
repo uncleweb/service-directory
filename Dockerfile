@@ -1,7 +1,7 @@
 FROM ubuntu:14.04
 MAINTAINER Colin Alston <colin@praekelt.com>
 RUN apt-get update && apt-get -y --force-yes install libjpeg-dev zlib1g-dev libxslt1-dev libpq-dev nginx supervisor python-dev python-pip libffi-dev
-RUN apt-get -y install postgis libgdal1-dev
+RUN apt-get -y install postgis
 
 RUN pip install --upgrade pip
 
