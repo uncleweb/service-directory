@@ -15,11 +15,11 @@ sudo: required
 # https://docs.travis-ci.com/user/database-setup/#ElasticSearch
 services:
   - elasticsearch
+  - postgresql
 
-before_install:
-  - sudo apt-get update -y
-  - sudo apt-get install -y postgresql-9.6-postgis-2.4
-  - sudo service postgresql restart
+addons:
+  postgresql: "9.6"
+
 
 install:
   - pip install coveralls
@@ -29,6 +29,7 @@ install:
   - pip install -e .
 
 before_script:
+  - sudo apt-get install postgresql-9.6-postgis-2.4 postgis -y -q
   - sleep 10  # ElasticSearch may take a few seconds to start and may not be available when the script is executed.
 
 script:
