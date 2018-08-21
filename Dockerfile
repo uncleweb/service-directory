@@ -17,6 +17,7 @@ ADD setup.py /deploy/
 ADD README.rst /deploy/
 ADD VERSION /deploy/
 
+RUN pip install gdal --install-option="--include-dirs=/usr/include/gdal/"
 RUN pip install -e .
 
 RUN mkdir -p /etc/supervisor/conf.d/
