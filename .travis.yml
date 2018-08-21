@@ -19,7 +19,7 @@ services:
 before_install:
   - sudo apt-get update -y
   - sudo apt-get install -y postgresql-9.6-postgis-2.4
-  - sudo -u postgres psql -c "CREATE EXTENSION postgis; CREATE EXTENSION postgis_topology;" gisdata
+  - sudo -u postgres psql -c "CREATE EXTENSION postgis; CREATE EXTENSION postgis_topology;"
 
 install:
   - pip install coveralls
