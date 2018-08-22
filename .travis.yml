@@ -19,12 +19,11 @@ services:
 
 addons:
   postgresql: "9.6"
-  apt:
-    sources:
-    - elasticsearch-1.0.1
-    packages:
-    - elasticsearch
 
+before_install:
+  - curl -O https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/1.0.1/elasticsearch-1.0.1.deb && \
+    sudo dpkg -i --force-confnew elasticsearch-1.0.1.deb && \
+    sudo service elasticsearch restart
 
 install:
   - pip install coveralls
