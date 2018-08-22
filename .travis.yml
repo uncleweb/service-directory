@@ -19,6 +19,11 @@ services:
 
 addons:
   postgresql: "9.6"
+  apt:
+    sources:
+    - elasticsearch-1.0.1
+    packages:
+    - elasticsearch
 
 
 install:
@@ -29,8 +34,6 @@ install:
   - pip install -e .
 
 before_script:
-  - wget https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.0.1.deb
-  - sudo dpkg -i elasticsearch-1.0.1.deb
   - sudo apt-get install postgresql-9.6-postgis-2.4 -y -q
   - sleep 10  # ElasticSearch may take a few seconds to start and may not be available when the script is executed.
 
