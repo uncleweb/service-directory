@@ -202,7 +202,7 @@ class SearchTestCase(TestCase):
         # #django.db.models.fields.related.RelatedManager.add
         signal_processor.flush_changes()
 
-        call_command('rebuild_index', interactive=False, verbosity=0)
+        # call_command('rebuild_index', interactive=False, verbosity=0)
 
     def test_get_without_parameters(self):
         response = self.client.get('/api/search/', format='json')
@@ -257,6 +257,30 @@ class SearchTestCase(TestCase):
             {'search_term': 'accident'},
             format='json'
         )
+        self.assertEqual(1, len(response.data))
+
+    def test_get_with_location_parameter_with_exact_location(self):
+        # -33.921387, 18.424101 - Adderley Street outside Cape Town station
+        response = self.client.get(
+            '/api/search/', {
+                'radius': 100,
+                'exact_location': True,
+                'location': '-33.921387,18.424101'
+            },
+            format='json'
+        )
+        self.assertEqual(3, len(response.data))
+
+        response = self.client.get(
+            '/api/search/', {
+                'radius': 150,
+                'exact_location': True,
+                'location': '-32.921387,17.424101'
+            },
+            format='json'
+        )
+        # Netcare Christiaan Barnard Memorial Hospital
+        # distance: 144.53km
         self.assertEqual(1, len(response.data))
 
     def test_get_with_location_parameter(self):
