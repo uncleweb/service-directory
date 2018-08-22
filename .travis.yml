@@ -18,6 +18,11 @@ services:
   - postgresql
 
 addons:
+  apt:
+    sources:
+      - elasticsearch-1.0.1  # using 1.7 here works
+    packages:
+      - elasticsearch
   postgresql: "9.6"
 
 
