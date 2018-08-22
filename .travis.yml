@@ -28,8 +28,7 @@ install:
   - pip install -e .
 
 before_script:
-  - sudo curl -O https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/1.0.1/elasticsearch-1.0.1.deb
-  - sudo dpkg -i --force-confnew elasticsearch-1.0.1.deb
+  - sudo curl -O https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/1.0.1/elasticsearch-1.0.1.deb && sudo dpkg -i --force-confnew elasticsearch-1.0.1.deb
   - sudo service elasticsearch restart
   - sudo apt-get install postgresql-9.6-postgis-2.4 -y -q
   - sleep 10  # ElasticSearch may take a few seconds to start and may not be available when the script is executed.
