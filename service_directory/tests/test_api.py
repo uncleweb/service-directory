@@ -9,6 +9,8 @@ from django.test import TestCase
 from haystack import signal_processor
 from haystack.backends.elasticsearch_backend import ElasticsearchSearchBackend
 from pytz import utc
+from django.core.management import call_command
+
 from rest_framework.test import APIClient
 from service_directory.api.models import Country, Category, Keyword,\
     Organisation, KeywordCategory, OrganisationCategory, OrganisationKeyword
@@ -31,6 +33,9 @@ def reset_haystack_index():
 
 class SearchTestCase(TestCase):
     client_class = APIClient
+
+    def tearDown(self):
+        call_command('clear_index', interactive=False, verbosity=0)
 
     @classmethod
     def setUp(cls):
@@ -196,6 +201,8 @@ class SearchTestCase(TestCase):
         # see https://docs.djangoproject.com/en/1.8/ref/models/relations/
         # #django.db.models.fields.related.RelatedManager.add
         signal_processor.flush_changes()
+
+        call_command('rebuild_index', interactive=False, verbosity=0)
 
     def test_get_without_parameters(self):
         response = self.client.get('/api/search/', format='json')
