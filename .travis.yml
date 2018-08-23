@@ -30,7 +30,7 @@ install:
 before_script:
   - mkdir /tmp/elasticsearch
   - wget -O - https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.5.0.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1
-  - /tmp/elasticsearch/bin/elasticsearch --daemonize --path.data /tmp
+  - /tmp/elasticsearch/bin/elasticsearch &
   - sudo apt-get install postgresql-9.6-postgis-2.4 -y -q
   - sleep 10  # ElasticSearch may take a few seconds to start and may not be available when the script is executed.
 
