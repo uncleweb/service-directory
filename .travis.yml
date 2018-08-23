@@ -9,7 +9,6 @@ cache:
 
 env:
   - TZ=UTC
-  - ES_VERSION=1.0.1
 
 sudo: required
 
@@ -30,7 +29,7 @@ install:
 
 before_script:
   - mkdir /tmp/elasticsearch
-  - wget -O - https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/${ES_VERSION}/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1
+  - wget -O - https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/1.0.1/elasticsearch-1.0.1.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1
   - /tmp/elasticsearch/bin/elasticsearch --daemonize --path.data /tmp
   - sudo apt-get install postgresql-9.6-postgis-2.4 -y -q
   - sleep 10  # ElasticSearch may take a few seconds to start and may not be available when the script is executed.
@@ -54,4 +53,4 @@ deploy:
 
 notifications:
   slack: praekeltfoundation:mgvd7PsJynKvMoximpSmuusw
-  
+
