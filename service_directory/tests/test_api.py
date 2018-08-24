@@ -202,7 +202,6 @@ class SearchTestCase(TestCase):
         # #django.db.models.fields.related.RelatedManager.add
         signal_processor.flush_changes()
 
-
     def test_get_without_parameters(self):
         response = self.client.get('/api/search/', format='json')
 
