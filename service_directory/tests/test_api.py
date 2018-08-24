@@ -281,6 +281,28 @@ class SearchTestCase(TestCase):
         # distance: 144.53km
         self.assertEqual(1, len(response.data))
 
+        response = self.client.get(
+            '/api/search/', {
+                'search_term': 'Netcare',
+                'radius': 100,
+                'exact_location': True,
+                'location': '-32.921387,17.424101'
+            },
+            format='json'
+        )
+        self.assertEqual(0, len(response.data))
+
+        response = self.client.get(
+            '/api/search/', {
+                'search_term': 'Hospital',
+                'radius': 150,
+                'exact_location': True,
+                'location': '-32.921387,17.424101'
+            },
+            format='json'
+        )
+        self.assertEqual(1, len(response.data))
+
     def test_get_with_location_parameter(self):
         # -33.921387, 18.424101 - Adderley Street outside Cape Town station
         response = self.client.get(
