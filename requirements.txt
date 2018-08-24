@@ -5,7 +5,7 @@ Django==1.8.8
 djangorestframework==3.3.2
 django-rest-swagger==0.3.4
 django-import-export==0.4.2
-psycopg2==2.6.1
+psycopg2-binary>=2.7.3
 python-dateutil>=2.4.2
 
 elasticsearch<2.0.0
@@ -17,3 +17,4 @@ raven==5.0.0
 universal-analytics-python==0.2.4
 
 go_http==0.2.6
+

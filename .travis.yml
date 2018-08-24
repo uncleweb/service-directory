@@ -2,6 +2,7 @@ sudo: false
 language: python
 python:
   - "2.7"
+
 cache:
   directories:
     - $HOME/.pip-cache/
@@ -13,15 +14,24 @@ sudo: required
 
 # https://docs.travis-ci.com/user/database-setup/#ElasticSearch
 services:
-  - elasticsearch
+  - postgresql
+
+addons:
+  postgresql: "9.6"
+
 
 install:
   - pip install coveralls
   - pip install wheel
+  - pip install -r requirements.txt
   - pip install -r requirements-dev.txt
   - pip install -e .
 
 before_script:
+  - mkdir /tmp/elasticsearch
+  - wget -O - https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.5.0.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1
+  - /tmp/elasticsearch/bin/elasticsearch &>/dev/null &
+  - sudo apt-get install postgresql-9.6-postgis-2.4 -y -q
   - sleep 10  # ElasticSearch may take a few seconds to start and may not be available when the script is executed.
 
 script:
@@ -43,4 +53,4 @@ deploy:
 
 notifications:
   slack: praekeltfoundation:mgvd7PsJynKvMoximpSmuusw
-  
+
