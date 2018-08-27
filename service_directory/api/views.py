@@ -139,6 +139,7 @@ class Search(APIView):
         response_serializer: OrganisationSummarySerializer
     """
     def get(self, request):
+        query = {}
         radius = 25
         point = None
         place_name = None
@@ -172,19 +173,28 @@ class Search(APIView):
         )
 
         sqs = ConfigurableSearchQuerySet().models(Organisation)
+        if search_term:
+            query = {
+                "match": {
+                    "text": {
+                        "query": search_term,
+                        "fuzziness": "AUTO"
+                    }
+                }
+            }
 
         if point and exact_location:
-            sqs = sqs.raw_search(search_term).\
-                dwithin('location', point, D(km=radius))\
+            sqs = sqs.custom_query(query)\
+                .dwithin('location', point, D(km=radius))\
                 .distance('location', point).order_by('distance')
 
         elif point:
-            sqs = sqs.raw_search(search_term)\
+            sqs = sqs.custom_query(query)\
                 .distance('location', point)\
                 .order_by('distance')
 
         else:
-            sqs = sqs.raw_search(search_term)
+            sqs = sqs.custom_query(query)
 
         # fetch all result objects and limit to 20 results
         sqs = sqs.load_all()[:20]
