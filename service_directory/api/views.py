@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from service_directory.api.haystack_elasticsearch_raw_query.\
     custom_elasticsearch import ConfigurableSearchQuerySet
-from haystack.query import SQ, SearchQuerySet
+from haystack.query import AutoQuery
 from service_directory.api.models import Keyword, Category, Organisation
 from service_directory.api.serializers import\
     HomePageCategoryKeywordGroupingSerializer, \
@@ -184,12 +184,12 @@ class Search(APIView):
             }
 
         if point and exact_location:
-            sqs = sqs.custom_query(query)\
+            sqs = sqs.filter(content__fuzzy=AutoQuery(search_term))\
                 .dwithin('location', point, D(km=radius))\
                 .distance('location', point).order_by('distance')
 
         elif point:
-            sqs = sqs.custom_query(query)\
+            sqs = sqs.filter(content__fuzzy=AutoQuery(search_term))\
                 .distance('location', point)\
                 .order_by('distance')
 
