@@ -138,11 +138,10 @@ class Search(APIView):
         response_serializer: OrganisationSummarySerializer
     """
     def get(self, request):
-        radius = 25
         point = None
+        radius = None
         place_name = None
         search_term = ''
-        exact_location = None
 
         if 'radius' in request.query_params:
             radius = int(request.query_params['radius'].strip())
@@ -185,7 +184,7 @@ class Search(APIView):
         if point:
             sqs = sqs.distance('location', point).order_by('distance')
 
-            if radius and exact_location:
+            if radius:
                 sqs = sqs.dwithin('location', point, D(km=radius))
 
         # fetch all result objects and limit to 20 results
