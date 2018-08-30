@@ -127,10 +127,6 @@ class Search(APIView):
               description: only used for analytics purposes
               type: string
               paramType: query
-            - name: exact_location
-              description: should limit response exactly to user location
-              type: bool
-              default: None/False
             - name: radius
               description: limit response to user location within this radius
               type: int
@@ -145,9 +141,6 @@ class Search(APIView):
 
         if 'radius' in request.query_params:
             radius = int(request.query_params['radius'].strip())
-
-        if 'exact_location' in request.query_params:
-            exact_location = True
 
         if 'search_term' in request.query_params:
             search_term = request.query_params['search_term'].strip()
