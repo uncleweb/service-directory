@@ -41,9 +41,12 @@ class ConfigurableElasticBackend(ElasticsearchSearchBackend):
             out['query'] = self.nested_query_factory(nested)
 
         elif custom_query:
-            if out['query'].get('filtered'):
+            filtered = out['query'].get('filtered')
+
+            if filtered and filtered.get('filter', {}).get('bool'):
                 out['query']['filtered']['filter']['bool']['must']\
                     .append({'query': custom_query})
+
             else:
                 out['query'] = custom_query
 
