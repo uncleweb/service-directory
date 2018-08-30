@@ -13,7 +13,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from service_directory.api.haystack_elasticsearch_raw_query.\
     custom_elasticsearch import ConfigurableSearchQuerySet
-from haystack.query import AutoQuery
 from service_directory.api.models import Keyword, Category, Organisation
 from service_directory.api.serializers import\
     HomePageCategoryKeywordGroupingSerializer, \
@@ -139,7 +138,6 @@ class Search(APIView):
         response_serializer: OrganisationSummarySerializer
     """
     def get(self, request):
-        query = {}
         radius = 25
         point = None
         place_name = None
@@ -182,19 +180,13 @@ class Search(APIView):
                     }
                 }
             }
-
-        if point and exact_location:
-            sqs = sqs.filter(content__fuzzy=AutoQuery(search_term))\
-                .dwithin('location', point, D(km=radius))\
-                .distance('location', point).order_by('distance')
-
-        elif point:
-            sqs = sqs.filter(content__fuzzy=AutoQuery(search_term))\
-                .distance('location', point)\
-                .order_by('distance')
-
-        else:
             sqs = sqs.custom_query(query)
+
+        if point:
+            sqs = sqs.distance('location', point).order_by('distance')
+
+            if radius and exact_location:
+                sqs = sqs.dwithin('location', point, D(km=radius))
 
         # fetch all result objects and limit to 20 results
         sqs = sqs.load_all()[:20]
