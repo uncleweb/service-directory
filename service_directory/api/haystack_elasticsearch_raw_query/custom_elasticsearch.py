@@ -37,12 +37,18 @@ class ConfigurableElasticBackend(ElasticsearchSearchBackend):
                                                                within, dwithin, distance_point,
                                                                models, limit_to_registered_models,
                                                                result_class)
-
         if nested:
             out['query'] = self.nested_query_factory(nested)
 
         elif custom_query:
-            out['query'] = custom_query
+            filtered = out['query'].get('filtered')
+
+            if filtered and filtered.get('filter', {}).get('bool'):
+                out['query']['filtered']['filter']['bool']['must']\
+                    .append({'query': custom_query})
+
+            else:
+                out['query'] = custom_query
 
         return out
 

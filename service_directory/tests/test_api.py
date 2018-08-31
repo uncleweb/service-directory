@@ -262,7 +262,6 @@ class SearchTestCase(TestCase):
         response = self.client.get(
             '/api/search/', {
                 'radius': 100,
-                'exact_location': True,
                 'location': '-33.921387,18.424101'
             },
             format='json'
@@ -272,13 +271,72 @@ class SearchTestCase(TestCase):
         response = self.client.get(
             '/api/search/', {
                 'radius': 150,
-                'exact_location': True,
                 'location': '-32.921387,17.424101'
             },
             format='json'
         )
         # Netcare Christiaan Barnard Memorial Hospital
         # distance: 144.53km
+        self.assertEqual(1, len(response.data))
+
+        response = self.client.get(
+            '/api/search/', {
+                'search_term': 'Netcare',
+                'radius': 100,
+                'location': '-32.921387,17.424101'
+            },
+            format='json'
+        )
+        self.assertEqual(0, len(response.data))
+
+        response = self.client.get(
+            '/api/search/', {
+                'search_term': 'testt',
+                'radius': 1000,
+                'location': '-32.921387,17.424101'
+            },
+            format='json'
+        )
+        self.assertEqual(3, len(response.data))
+
+        response = self.client.get(
+            '/api/search/', {
+                'search_term': 'testt',
+                'radius': 154,
+                'location': '-32.921387,17.424101'
+            },
+            format='json'
+        )
+        self.assertEqual(2, len(response.data))
+
+        response = self.client.get(
+            '/api/search/', {
+                'search_term': 'Hospital',
+                'radius': 1000,
+                'location': '-32.921387,17.424101'
+            },
+            format='json'
+        )
+        self.assertEqual(2, len(response.data))
+
+        response = self.client.get(
+            '/api/search/', {
+                'search_term': 'test',
+                'radius': 1000,
+                'location': '-32.921387,17.424101'
+            },
+            format='json'
+        )
+        self.assertEqual(3, len(response.data))
+
+        response = self.client.get(
+            '/api/search/', {
+                'search_term': 'Hospital',
+                'radius': 150,
+                'location': '-32.921387,17.424101'
+            },
+            format='json'
+        )
         self.assertEqual(1, len(response.data))
 
     def test_get_with_location_parameter(self):

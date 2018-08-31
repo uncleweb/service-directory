@@ -127,10 +127,6 @@ class Search(APIView):
               description: only used for analytics purposes
               type: string
               paramType: query
-            - name: exact_location
-              description: should limit response exactly to user location
-              type: bool
-              default: None/False
             - name: radius
               description: limit response to user location within this radius
               type: int
@@ -138,17 +134,13 @@ class Search(APIView):
         response_serializer: OrganisationSummarySerializer
     """
     def get(self, request):
-        radius = 25
         point = None
+        radius = None
         place_name = None
-        search_term = None
-        exact_location = None
+        search_term = ''
 
         if 'radius' in request.query_params:
             radius = int(request.query_params['radius'].strip())
-
-        if 'exact_location' in request.query_params:
-            exact_location = True
 
         if 'search_term' in request.query_params:
             search_term = request.query_params['search_term'].strip()
@@ -171,7 +163,6 @@ class Search(APIView):
         )
 
         sqs = ConfigurableSearchQuerySet().models(Organisation)
-
         if search_term:
             query = {
                 "match": {
@@ -183,12 +174,11 @@ class Search(APIView):
             }
             sqs = sqs.custom_query(query)
 
-        if point and exact_location:
-            sqs = sqs.dwithin('location', point, D(km=radius))\
-                .distance('location', point).order_by('distance')
-
-        elif point:
+        if point:
             sqs = sqs.distance('location', point).order_by('distance')
+
+            if radius:
+                sqs = sqs.dwithin('location', point, D(km=radius))
 
         # fetch all result objects and limit to 20 results
         sqs = sqs.load_all()[:20]
