@@ -140,7 +140,10 @@ class Search(APIView):
         search_term = ''
 
         if 'radius' in request.query_params:
-            radius = int(request.query_params['radius'].strip())
+            try:
+                radius = int(request.query_params['radius'].strip())
+            except ValueError:
+                pass
 
         if 'search_term' in request.query_params:
             search_term = request.query_params['search_term'].strip()
