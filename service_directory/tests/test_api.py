@@ -270,6 +270,15 @@ class SearchTestCase(TestCase):
 
         response = self.client.get(
             '/api/search/', {
+                'radius': 'randomstring',
+                'location': '-33.921387,18.424101'
+            },
+            format='json'
+        )
+        self.assertEqual(3, len(response.data))
+
+        response = self.client.get(
+            '/api/search/', {
                 'radius': 150,
                 'location': '-32.921387,17.424101'
             },
