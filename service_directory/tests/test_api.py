@@ -45,10 +45,17 @@ class SearchTestCase(TestCase):
             name='South Africa',
             iso_code='ZA'
         )
+        cls.country2 = Country.objects.create(
+            name='USA',
+            iso_code='US'
+        )
         cls.country.full_clean()  # force model validation to happen
 
         cls.category = Category.objects.create(name='Test Category')
         cls.category.full_clean()  # force model validation to happen
+
+        cls.category2 = Category.objects.create(name='Test Category2')
+        cls.category2.full_clean()  # force model validation to happen
 
         cls.keyword_test = Keyword.objects.create(name='test')
         cls.keyword_test.full_clean()  # force model validation to happen
@@ -113,10 +120,10 @@ class SearchTestCase(TestCase):
         )
         cls.org_cbmh.full_clean()  # force model validation to happen
 
-        oc = OrganisationCategory.objects.create(
+        cls.oc = OrganisationCategory.objects.create(
             organisation=cls.org_cbmh, category=cls.category
         )
-        oc.full_clean()  # force model validation to happen
+        cls.oc.full_clean()  # force model validation to happen
 
         ok = OrganisationKeyword.objects.create(
             organisation=cls.org_cbmh, keyword=cls.keyword_test
@@ -145,10 +152,15 @@ class SearchTestCase(TestCase):
         )
         cls.org_khc.full_clean()  # force model validation to happen
 
-        oc = OrganisationCategory.objects.create(
+        cls.oc2 = OrganisationCategory.objects.create(
             organisation=cls.org_khc, category=cls.category
         )
-        oc.full_clean()  # force model validation to happen
+        cls.oc2.full_clean()  # force model validation to happen
+
+        cls.oc3 = OrganisationCategory.objects.create(
+            organisation=cls.org_khc, category=cls.category2
+        )
+        cls.oc3.full_clean()  # force model validation to happen
 
         ok = OrganisationKeyword.objects.create(
             organisation=cls.org_khc, keyword=cls.keyword_test
@@ -253,6 +265,41 @@ class SearchTestCase(TestCase):
         response = self.client.get(
             '/api/search/',
             {'search_term': 'accident'},
+            format='json'
+        )
+        self.assertEqual(1, len(response.data))
+
+    def test_country_filter(self):
+        response = self.client.get(
+            '/api/search/', {
+                'country': self.country.iso_code,
+            },
+            format='json'
+        )
+        self.assertEqual(3, len(response.data))
+
+        response = self.client.get(
+            '/api/search/', {
+                'country': self.country2.iso_code,
+            },
+            format='json'
+        )
+        self.assertEqual(0, len(response.data))
+
+    def test_category_filter(self):
+        self.assertIsNotNone(self.oc.pk)
+        response = self.client.get(
+            '/api/search/', {
+                'categories': self.oc.category.pk,
+            },
+            format='json'
+        )
+        self.assertEqual(3, len(response.data))
+
+        response = self.client.get(
+            '/api/search/', {
+                'categories': self.oc3.category.pk,
+            },
             format='json'
         )
         self.assertEqual(1, len(response.data))

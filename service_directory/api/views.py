@@ -11,6 +11,7 @@ from rest_framework import status
 from rest_framework.generics import RetrieveAPIView, ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from haystack.query import ValuesListSearchQuerySet
 from service_directory.api.haystack_elasticsearch_raw_query.\
     custom_elasticsearch import ConfigurableSearchQuerySet
 from service_directory.api.models import Keyword, Category, Organisation
@@ -136,8 +137,10 @@ class Search(APIView):
     def get(self, request):
         point = None
         radius = None
-        place_name = None
         search_term = ''
+        place_name = None
+        country = request.query_params.get('country')
+        categories = request.query_params.get('categories', [])
 
         if 'radius' in request.query_params:
             radius = int(request.query_params['radius'].strip())
@@ -173,6 +176,12 @@ class Search(APIView):
                 }
             }
             sqs = sqs.custom_query(query)
+
+        if categories:
+            sqs = sqs.filter(categories=categories)
+
+        if country:
+            sqs = sqs.filter(country=country)
 
         if point:
             sqs = sqs.distance('location', point).order_by('distance')
