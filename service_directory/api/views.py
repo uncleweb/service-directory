@@ -11,7 +11,6 @@ from rest_framework import status
 from rest_framework.generics import RetrieveAPIView, ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from haystack.query import ValuesListSearchQuerySet
 from service_directory.api.haystack_elasticsearch_raw_query.\
     custom_elasticsearch import ConfigurableSearchQuerySet
 from service_directory.api.models import Keyword, Category, Organisation
