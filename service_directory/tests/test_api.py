@@ -541,6 +541,24 @@ class SearchTestCase(TestCase):
 
         self.assertEqual(2, len(response.data))
 
+    def test_api_validation(self):
+        response = self.client.get(
+            '/api/search/', {
+                'search_term': 12,
+                'place_name': 12,
+                'radius': 'abc',
+                'country': 'A',
+                'categories': '1',
+                'location': '-32.921387,'
+            },
+            format='json'
+        )
+        self.assertEqual(response.data, {
+            'country': [u'Ensure this field has at least 2 characters.'],
+            'radius': [u'A valid integer is required.'],
+            'location': [u'A valid comma separated point field is required.']
+        })
+
 
 class OrganisationDetailTestCase(TestCase):
     client_class = APIClient

@@ -2,8 +2,6 @@ import logging
 
 from UniversalAnalytics import Tracker
 from django.conf import settings
-from django.contrib.gis.geos import Point
-from django.contrib.gis.measure import D
 from django.db.models.query import Prefetch
 from django.http import Http404
 from go_http import HttpApiSender
@@ -19,7 +17,7 @@ from service_directory.api.serializers import\
     KeywordSerializer, OrganisationSummarySerializer, \
     OrganisationSerializer, OrganisationIncorrectInformationReportSerializer, \
     OrganisationRatingSerializer, OrganisationSendSMSRequestSerializer, \
-    OrganisationSendSMSResponseSerializer
+    OrganisationSendSMSResponseSerializer, SearchSerializer
 
 google_analytics_tracker = Tracker.create(
     settings.GOOGLE_ANALYTICS_TRACKING_ID,
@@ -128,93 +126,40 @@ class Search(APIView):
               type: string
               paramType: query
             - name: radius
-              description: limit response to user location within this radius
+              description:
+               limit response to user location within this radius (KMs)
               type: int
-              default: 25 (KMs)
+              paramType: query
+              default: None
+            - name: country
+              description: filter response to the given country iso code
+              type: string
+              paramType: query
+              default: None
+            - name: categories
+              description: filter response to the given categories
+              type: int list
+              paramType: query
+              default: None
         response_serializer: OrganisationSummarySerializer
     """
     def get(self, request):
-        point = None
-        radius = None
-        search_term = ''
-        place_name = None
-        country = request.query_params.get('country')
-        categories = request.query_params.get('categories', [])
-
-        if 'radius' in request.query_params:
-            radius = int(request.query_params['radius'].strip())
-
-        if 'search_term' in request.query_params:
-            search_term = request.query_params['search_term'].strip()
-
-        if 'location' in request.query_params:
-            latlng = request.query_params['location'].strip()
-            lat, lng = latlng.split(',')
-            lat = float(lat)
-            lng = float(lng)
-            point = Point(lng, lat, srid=4326)
-
-        if 'place_name' in request.query_params:
-            place_name = request.query_params['place_name'].strip()
+        search_serializer = SearchSerializer(data=request.query_params)
 
         send_ga_tracking_event(
-            request._request.path,
-            'Search',
-            search_term or '',
-            place_name or ''
+            request._request.path, 'Search',
+            request.query_params.get('search_term', ''),
+            request.query_params.get('place_name', '')
         )
 
-        sqs = ConfigurableSearchQuerySet().models(Organisation)
-        if search_term:
-            query = {
-                "match": {
-                    "text": {
-                        "query": search_term,
-                        "fuzziness": "AUTO"
-                    }
-                }
-            }
-            sqs = sqs.custom_query(query)
-
-        if categories:
-            sqs = sqs.filter(categories=categories)
-
-        if country:
-            sqs = sqs.filter(country=country)
-
-        if point:
-            sqs = sqs.distance('location', point).order_by('distance')
-
-            if radius:
-                sqs = sqs.dwithin('location', point, D(km=radius))
-
-        # fetch all result objects and limit to 20 results
-        sqs = sqs.load_all()[:20]
-
-        organisation_distance_tuples = []
-        try:
-            organisation_distance_tuples = [
-                (
-                    result.object,
-                    result.distance if hasattr(result, 'distance') else None
-                )
-                for result in sqs
-            ]
-        except AttributeError:
-            logging.warn('The ElasticSearch index is likely out of sync with'
-                         ' the database. You should run the `rebuild_index`'
-                         ' management command.')
-
-        for organisation, distance in organisation_distance_tuples:
-            if distance is not None and distance.m != float("inf"):
-                organisation.distance = '{0:.2f}km'.format(distance.km)
-
-        if organisation_distance_tuples:
-            services = zip(*organisation_distance_tuples)[0]
-            serializer = OrganisationSummarySerializer(services, many=True)
+        # perform search
+        if search_serializer.is_valid():
+            sqs = ConfigurableSearchQuerySet().models(Organisation)
+            sqs = search_serializer.load_search_results(sqs)
+            serializer = OrganisationSummarySerializer(
+                search_serializer.format_results(sqs), many=True)
             return Response(serializer.data)
-
-        return Response([])
+        return Response(search_serializer.errors)
 
 
 class OrganisationDetail(RetrieveAPIView):
