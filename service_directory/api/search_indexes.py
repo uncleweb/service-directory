@@ -3,6 +3,7 @@ from models import Organisation
 
 
 class OrganisationIndex(indexes.SearchIndex, indexes.Indexable):
+    keywords = indexes.MultiValueField(null=True)
     categories = indexes.MultiValueField(null=True)
 
     text = indexes.CharField(document=True, use_template=True)
@@ -17,4 +18,10 @@ class OrganisationIndex(indexes.SearchIndex, indexes.Indexable):
         return [
             category.id for category in
             obj.categories.order_by('pk')
+        ]
+
+    def prepare_keywords(self, obj):
+        return [
+            keyword.name for keyword in
+            obj.keywords.order_by('name')
         ]

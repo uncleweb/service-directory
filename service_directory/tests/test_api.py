@@ -559,6 +559,26 @@ class SearchTestCase(TestCase):
             'location': [u'A valid comma separated point field is required.']
         })
 
+    def test_keyword_filter(self):
+        response = self.client.get(
+            '/api/search/', {
+                'keywords': self.keyword_heart.name,
+            },
+            format='json'
+        )
+        self.assertEqual(1, len(response.data))
+
+        keyword = Keyword.objects.create(name='random')
+        keyword.full_clean()
+
+        response = self.client.get(
+            '/api/search/', {
+                'keywords': keyword.name,
+            },
+            format='json'
+        )
+        self.assertEqual(0, len(response.data))
+
 
 class OrganisationDetailTestCase(TestCase):
     client_class = APIClient

@@ -43,6 +43,10 @@ class SearchSerializer(serializers.Serializer):
     place_name = serializers.CharField(required=False)
     search_term = serializers.CharField(required=False)
     country = serializers.CharField(required=False, min_length=2)
+
+    keywords = serializers.ListField(
+        child=serializers.CharField(), required=False)
+
     categories = serializers.ListField(
         child=serializers.IntegerField(), required=False)
 
@@ -50,6 +54,7 @@ class SearchSerializer(serializers.Serializer):
         radius = self.validated_data.get('radius')
         country = self.validated_data.get('country')
         location = self.validated_data.get('location')
+        keywords = self.validated_data.get('keywords')
         categories = self.validated_data.get('categories')
         search_term = self.validated_data.get('search_term')
 
@@ -64,11 +69,14 @@ class SearchSerializer(serializers.Serializer):
             }
             sqs = sqs.custom_query(query)
 
-        if categories:
-            sqs = sqs.filter(categories__in=categories)
-
         if country:
             sqs = sqs.filter(country=country)
+
+        if keywords:
+            sqs = sqs.filter(keywords__in=keywords)
+
+        if categories:
+            sqs = sqs.filter(categories__in=categories)
 
         if location:
             sqs = sqs.distance('location', location).order_by('distance')
