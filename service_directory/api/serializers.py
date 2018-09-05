@@ -39,10 +39,10 @@ class KeywordSerializer(serializers.ModelSerializer):
 
 class SearchSerializer(serializers.Serializer):
     location = PointField(required=False)
-    radius = serializers.IntegerField(required=False)
     place_name = serializers.CharField(required=False)
     search_term = serializers.CharField(required=False)
     country = serializers.CharField(required=False, min_length=2)
+    radius = serializers.IntegerField(required=False, min_value=0)
 
     keywords = serializers.ListField(
         child=serializers.CharField(), required=False)

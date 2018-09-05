@@ -546,7 +546,7 @@ class SearchTestCase(TestCase):
             '/api/search/', {
                 'search_term': 12,
                 'place_name': 12,
-                'radius': 'abc',
+                'radius': -1,
                 'country': 'A',
                 'categories': '1',
                 'location': '-32.921387,'
@@ -555,7 +555,7 @@ class SearchTestCase(TestCase):
         )
         self.assertEqual(response.data, {
             'country': [u'Ensure this field has at least 2 characters.'],
-            'radius': [u'A valid integer is required.'],
+            'radius': [u'Ensure this value is greater than or equal to 0.'],
             'location': [u'A valid comma separated point field is required.']
         })
 
