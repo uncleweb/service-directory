@@ -10,7 +10,7 @@ from rest_framework import serializers
 class PointField(serializers.CharField):
 
     def to_representation(self, obj):
-        return ','.join([obj.get_x(), obj.get_y()])
+        return '{} {}'.format(obj.get_x(), obj.get_y())
 
     def to_internal_value(self, data):
         lat, lng = data.split(',')
