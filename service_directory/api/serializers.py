@@ -1,8 +1,26 @@
+import logging
 from collections import OrderedDict
-
+from django.contrib.gis.measure import D
+from django.contrib.gis.geos import Point
 from models import Organisation, Category, Keyword, \
     OrganisationIncorrectInformationReport, OrganisationRating
 from rest_framework import serializers
+
+
+class PointField(serializers.CharField):
+
+    def to_representation(self, obj):
+        return '{} {}'.format(obj.get_x(), obj.get_y())
+
+    def to_internal_value(self, data):
+        lat, lng = data.split(',')
+        try:
+            lat = float(lat)
+            lng = float(lng)
+        except ValueError:
+            raise serializers.ValidationError(
+                u'A valid comma separated point field is required.')
+        return Point(lng, lat, srid=4326)
 
 
 class HomePageCategoryKeywordGroupingSerializer(serializers.ModelSerializer):
@@ -17,6 +35,87 @@ class HomePageCategoryKeywordGroupingSerializer(serializers.ModelSerializer):
 class KeywordSerializer(serializers.ModelSerializer):
     class Meta:
         model = Keyword
+
+
+class SearchSerializer(serializers.Serializer):
+    location = PointField(required=False)
+    place_name = serializers.CharField(required=False)
+    search_term = serializers.CharField(required=False)
+    country = serializers.CharField(required=False, min_length=2)
+    radius = serializers.IntegerField(required=False, min_value=0)
+
+    keywords = serializers.ListField(
+        child=serializers.CharField(), required=False)
+
+    categories = serializers.ListField(
+        child=serializers.IntegerField(), required=False)
+
+    def perform_search(self, sqs):
+        radius = self.validated_data.get('radius')
+        country = self.validated_data.get('country')
+        location = self.validated_data.get('location')
+        keywords = self.validated_data.get('keywords')
+        categories = self.validated_data.get('categories')
+        search_term = self.validated_data.get('search_term')
+
+        if search_term:
+            query = {
+                "match": {
+                    "text": {
+                        "query": search_term,
+                        "fuzziness": "AUTO"
+                    }
+                }
+            }
+            sqs = sqs.custom_query(query)
+
+        if country:
+            sqs = sqs.filter(country=country)
+
+        if keywords:
+            sqs = sqs.filter(keywords__in=keywords)
+
+        if categories:
+            sqs = sqs.filter(categories__in=categories)
+
+        if location:
+            sqs = sqs.distance('location', location).order_by('distance')
+
+            if radius:
+                sqs = sqs.dwithin('location', location, D(km=radius))
+
+        return sqs
+
+    def load_search_results(self, sqs, limit=20):
+        return self.perform_search(sqs).load_all()[:limit]
+
+    def format_results(self, sqs):
+        organisation_distance_tuples = []
+
+        try:
+            organisation_distance_tuples = [
+                (
+                    result.object,
+                    result.distance
+                    if hasattr(result, 'distance') else None
+                )
+                for result in sqs
+            ]
+        except AttributeError:
+            logging.warn(
+                'The ElasticSearch index is likely out of sync with'
+                ' the database.'
+                ' You should run the `rebuild_index` management command.'
+            )
+
+        for organisation, distance in organisation_distance_tuples:
+            if distance is not None and distance.m != float("inf"):
+                organisation.distance = '{0:.2f}km'.format(distance.km)
+
+        if organisation_distance_tuples:
+            services = zip(*organisation_distance_tuples)[0]
+            return services
+        return []
 
 
 class OrganisationSummarySerializer(serializers.ModelSerializer):
