@@ -29,7 +29,7 @@ class HomePageCategoryKeywordGroupingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ('name', 'keywords')
+        fields = ('id', 'name', 'keywords')
 
 
 class KeywordSerializer(serializers.ModelSerializer):

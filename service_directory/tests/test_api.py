@@ -892,19 +892,21 @@ class HomePageCategoryKeywordGroupingTestCase(TestCase):
         expected_response_content = '''
             [
                 {
+                    "id": %s,
                     "name":"Test Category 1",
                     "keywords":[
                         "test1"
                     ]
                 },
                 {
+                    "id": %s,
                     "name":"Test Category 3",
                     "keywords":[
                         "test3"
                     ]
                 }
             ]
-        '''
+        ''' % (self.category_1.pk, self.category_3.pk)
 
         self.assertJSONEqual(response.content, expected_response_content)
 
