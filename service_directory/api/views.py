@@ -90,6 +90,11 @@ class KeywordList(ListAPIView):
 
         category_list = self.request.query_params.getlist('category')
 
+        show_on_home_page = self.request.query_params.get(
+            'show_on_home_page')
+        if show_on_home_page:
+            queryset = queryset.filter(show_on_home_page=True)
+
         if category_list:
             queryset = queryset.filter(categories__name__in=category_list)
 

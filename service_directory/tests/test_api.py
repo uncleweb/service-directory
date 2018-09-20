@@ -965,6 +965,17 @@ class KeywordListTestCase(TestCase):
         )
         kwc.full_clean()  # force model validation to happen
 
+    def test_get_with_show_in_home_param(self):
+        Keyword.objects.create(
+            name='test', show_on_home_page=True
+        )
+        response = self.client.get(
+            '/api/keywords/', data={'show_on_home_page': True},
+            format='json'
+        )
+
+        self.assertEqual(1, len(response.data))
+
     def test_get_without_params(self):
         response = self.client.get(
             '/api/keywords/',
