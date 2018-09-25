@@ -58,7 +58,7 @@ class SearchSerializer(serializers.Serializer):
         categories = self.validated_data.get('categories')
         search_term = self.validated_data.get('search_term')
 
-        if search_term:
+        if search_term and not search_term == 'None':
             query = {
                 "match": {
                     "text": {

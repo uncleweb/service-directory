@@ -133,7 +133,7 @@ class Search(APIView):
             - name: radius
               description:
                limit response to user location within this radius (KMs)
-              type: int
+              type: integer
               paramType: query
               default: None
             - name: country
@@ -141,9 +141,14 @@ class Search(APIView):
               type: string
               paramType: query
               default: None
-            - name: categories
+            - name: keywords[]
+              description: filter response to the given category keywords
+              type: array[string]
+              paramType: query
+              default: None
+            - name: categories[]
               description: filter response to the given categories
-              type: int list
+              type: array[integer]
               paramType: query
               default: None
         response_serializer: OrganisationSummarySerializer
