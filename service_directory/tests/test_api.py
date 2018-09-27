@@ -57,7 +57,8 @@ class SearchTestCase(TestCase):
         cls.category2 = Category.objects.create(name='Test Category2')
         cls.category2.full_clean()  # force model validation to happen
 
-        cls.keyword_test = Keyword.objects.create(name='test')
+        cls.keyword_test = Keyword.objects.create(
+            name='test', show_on_home_page=True)
         cls.keyword_test.full_clean()  # force model validation to happen
 
         kwc = KeywordCategory.objects.create(
@@ -291,6 +292,14 @@ class SearchTestCase(TestCase):
         response = self.client.get(
             '/api/search/', {
                 'categories': self.oc.category.pk,
+            },
+            format='json'
+        )
+        self.assertEqual(3, len(response.data))
+
+        response = self.client.get(
+            '/api/search/', {
+                'all_categories': True,
             },
             format='json'
         )
@@ -578,6 +587,14 @@ class SearchTestCase(TestCase):
             format='json'
         )
         self.assertEqual(0, len(response.data))
+
+        response = self.client.get(
+            '/api/search/', {
+                'keywords': 'all_keywords',
+            },
+            format='json'
+        )
+        self.assertEqual(3, len(response.data))
 
 
 class OrganisationDetailTestCase(TestCase):
