@@ -41,6 +41,7 @@ class SearchSerializer(serializers.Serializer):
     location = PointField(required=False)
     place_name = serializers.CharField(required=False)
     search_term = serializers.CharField(required=False)
+    all_categories = serializers.BooleanField(required=False)
     country = serializers.CharField(required=False, min_length=2)
     radius = serializers.IntegerField(required=False, min_value=0)
 
@@ -57,6 +58,7 @@ class SearchSerializer(serializers.Serializer):
         keywords = self.validated_data.get('keywords')
         categories = self.validated_data.get('categories')
         search_term = self.validated_data.get('search_term')
+        all_categories = self.validated_data.get('all_categories')
 
         if search_term and not search_term == 'None':
             query = {
@@ -73,9 +75,15 @@ class SearchSerializer(serializers.Serializer):
             sqs = sqs.filter(country=country)
 
         if keywords:
-            sqs = sqs.filter(keywords__in=keywords)
+            if 'all_keywords' in keywords:
+                keyword_qs = Keyword.objects.filter(show_on_home_page=True)
+                sqs = sqs.filter(keywords__in=keyword_qs)
+            else:
+                sqs = sqs.filter(keywords__in=keywords)
 
-        if categories:
+        if categories or all_categories:
+            if all_categories:
+                categories = Category.objects.filter().values_list('pk', flat=True)
             sqs = sqs.filter(categories__in=categories)
 
         if location:
