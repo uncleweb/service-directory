@@ -83,7 +83,8 @@ class SearchSerializer(serializers.Serializer):
 
         if categories or all_categories:
             if all_categories:
-                categories = Category.objects.filter().values_list('pk', flat=True)
+                categories = Category.objects.filter()\
+                    .values_list('pk', flat=True)
             sqs = sqs.filter(categories__in=categories)
 
         if location:
