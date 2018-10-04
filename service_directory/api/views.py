@@ -151,6 +151,11 @@ class Search(APIView):
               type: array[integer]
               paramType: query
               default: None
+            - name: all_categories
+              description: filter response all categories
+              type: boolean
+              paramType: query
+              default: None
         response_serializer: OrganisationSummarySerializer
     """
     def get(self, request):
