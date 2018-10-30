@@ -318,7 +318,7 @@ class SearchTestCase(TestCase):
         response = self.client.get(
             '/api/search/', {
                 'radius': 100,
-                'location': '-33.921387,18.424101'
+                'location': '18.424101,-33.921387'
             },
             format='json'
         )
