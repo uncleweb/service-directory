@@ -20,7 +20,7 @@ class PointField(serializers.CharField):
         except ValueError:
             raise serializers.ValidationError(
                 u'A valid comma separated point field is required.')
-        return Point(lng, lat, srid=4326)
+        return Point(lat, lng, srid=4326)
 
 
 class HomePageCategoryKeywordGroupingSerializer(serializers.ModelSerializer):
@@ -152,12 +152,29 @@ class OrganisationSummarySerializer(serializers.ModelSerializer):
 
 
 class OrganisationSerializer(serializers.ModelSerializer):
+    distance = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         # Swagger does not deal well with NestedSerializer (ie: depth attr)
         # https://github.com/marcgibbons/django-rest-swagger/issues/398
         # Explicitly defining the descendant serializers would solve it
         model = Organisation
         depth = 1
+
+    def get_distance(self, instance):
+        location = self.context['request'].GET.get('location')
+        lat, lng = location.split(',') if location else 0, 0
+
+        if lat and lng and instance.location:
+            lat = float(lat)
+            lng = float(lng)
+            try:
+                return '{0:.2f}km'.format(
+                    instance.location.distance(Point(lat, lng, srid=4326))
+                )
+            except (ValueError, TypeError):
+                pass
+        return
 
 
 class OrganisationIncorrectInformationReportSerializer(
