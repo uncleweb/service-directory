@@ -20,7 +20,7 @@ class PointField(serializers.CharField):
         except ValueError:
             raise serializers.ValidationError(
                 u'A valid comma separated point field is required.')
-        return Point(lat, lng, srid=4326)
+        return Point(lng, lat, srid=4326)
 
 
 class HomePageCategoryKeywordGroupingSerializer(serializers.ModelSerializer):
