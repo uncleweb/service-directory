@@ -163,15 +163,15 @@ class OrganisationSerializer(serializers.ModelSerializer):
 
     def get_distance(self, instance):
         location = self.context['request'].GET.get('location')
-        lat, lng = location.split(',') if location else 0, 0
+        location = location.split(',') if location else None
 
-        if lat and lng and instance.location:
-            lat = float(lat)
-            lng = float(lng)
+        if location and instance.location:
             try:
-                return str('{0:.2f}km'.format(
-                    instance.location.distance(Point(lat, lng, srid=4326))
-                ))
+                lat = float(str(location[0]))
+                lng = float(str(location[1]))
+                distance = instance.location.distance(Point(lat, lng, srid=4326))
+                return str('{0:.2f}km'.format(distance))
+
             except (ValueError, TypeError):
                 pass
         return
