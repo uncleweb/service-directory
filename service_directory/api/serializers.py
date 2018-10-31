@@ -169,7 +169,7 @@ class OrganisationSerializer(serializers.ModelSerializer):
             try:
                 lat = float(str(location[0]))
                 lng = float(str(location[1]))
-                distance = instance.location.distance(Point(lat, lng, srid=4326))
+                distance = instance.location.distance(Point(lng, lat, srid=4326))
                 return str('{0:.2f}km'.format(distance))
 
             except (ValueError, TypeError):

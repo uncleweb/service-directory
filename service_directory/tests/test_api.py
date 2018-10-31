@@ -694,7 +694,7 @@ class OrganisationDetailTestCase(TestCase):
 
     def test_get_with_distance(self):
         url = '/api/organisation/{0}/'.format(self.org.id)
-        location = '?location=18.505496,-33.891937'
+        location = '?location=-33.891937,18.505496'
         response = self.client.get(
             url + location, format='json')
 
