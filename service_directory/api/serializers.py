@@ -152,12 +152,29 @@ class OrganisationSummarySerializer(serializers.ModelSerializer):
 
 
 class OrganisationSerializer(serializers.ModelSerializer):
+    distance = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         # Swagger does not deal well with NestedSerializer (ie: depth attr)
         # https://github.com/marcgibbons/django-rest-swagger/issues/398
         # Explicitly defining the descendant serializers would solve it
         model = Organisation
         depth = 1
+
+    def get_distance(self, instance):
+        location = self.context['request'].GET.get('location')
+        location = location.split(',') if location else None
+
+        if location and instance.location:
+            try:
+                lat = float(str(location[0]))
+                lng = float(str(location[1]))
+                return str('{0:.2f}km'.format(
+                    instance.location.distance(Point(lng, lat, srid=4326)))
+                )
+            except (ValueError, TypeError):
+                pass
+        return
 
 
 class OrganisationIncorrectInformationReportSerializer(
