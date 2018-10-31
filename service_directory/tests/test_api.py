@@ -702,6 +702,7 @@ class OrganisationDetailTestCase(TestCase):
             {
                 "id":%s,
                 "distance":%s,
+                "distance":"%s",
                 "name":"%s",
                 "about":"",
                 "address":"",
