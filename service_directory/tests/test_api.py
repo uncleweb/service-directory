@@ -701,7 +701,6 @@ class OrganisationDetailTestCase(TestCase):
         expected_response_content = '''
             {
                 "id":%s,
-                "distance":%s,
                 "distance":"%s",
                 "name":"%s",
                 "about":"",
