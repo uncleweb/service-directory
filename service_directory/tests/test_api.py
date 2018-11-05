@@ -598,6 +598,7 @@ class SearchTestCase(TestCase):
 
 
 class OrganisationDetailTestCase(TestCase):
+    maxDiff = None
     client_class = APIClient
 
     @classmethod
@@ -745,6 +746,62 @@ class OrganisationDetailTestCase(TestCase):
                str(self.category.show_on_home_page).lower(),
                self.keyword.id, self.keyword.name,
                str(self.keyword.show_on_home_page).lower(), self.category.id)
+
+        self.assertJSONEqual(response.content, expected_response_content)
+
+    def test_get_with_distance_greater_than_0(self):
+        url = '/api/organisation/{0}/'.format(self.org.id)
+        location = '?location=-33.891937,17.505496'
+        response = self.client.get(
+            url + location, format='json')
+
+        expected_response_content = '''
+                    {
+                        "id":%s,
+                        "distance":"%s",
+                        "name":"%s",
+                        "about":"",
+                        "address":"",
+                        "telephone":"",
+                        "emergency_telephone":"",
+                        "email":"",
+                        "web":"",
+                        "verified_as":"",
+                        "age_range_min":null,
+                        "age_range_max":null,
+                        "opening_hours":"",
+                        "location":"%s",
+                        "country":
+                            {
+                                "id":%s,
+                                "name":"%s",
+                                "iso_code":"%s"
+                            },
+                        "categories":[
+                            {
+                                "id":%s,
+                                "name":"%s",
+                                "show_on_home_page":%s
+                            }
+                        ],
+                        "keywords":[
+                            {
+                                "id":%s,
+                                "name":"%s",
+                                "show_on_home_page":%s,
+                                "categories":[
+                                    %s
+                                ]
+                            }
+                        ],
+                        "facility_code":""
+                    }
+                ''' % (self.org.id, '110.68km', self.org.name, self.org.location,
+                       self.country.id, self.country.name, self.country.iso_code,
+                       self.category.id, self.category.name,
+                       str(self.category.show_on_home_page).lower(),
+                       self.keyword.id, self.keyword.name,
+                       str(self.keyword.show_on_home_page).lower(), self.category.id)
 
         self.assertJSONEqual(response.content, expected_response_content)
 
