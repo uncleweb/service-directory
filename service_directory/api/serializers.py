@@ -1,5 +1,5 @@
 import logging
-from geopy.distance import distance
+from geopy.distance import distance as geo_distance
 from collections import OrderedDict
 from django.contrib.gis.measure import D
 from django.contrib.gis.geos import Point
@@ -172,8 +172,9 @@ class OrganisationSerializer(serializers.ModelSerializer):
                 lng = float(str(location[1]))
 
                 return '{0:.2f}km'.format(
-                    distance(
-                        (lng, lat), (instance.location.get_x(), instance.location.get_y())
+                    geo_distance(
+                        (lng, lat),
+                        (instance.location.get_x(), instance.location.get_y())
                     ).km
                 )
             except (ValueError, TypeError):
