@@ -750,6 +750,12 @@ class OrganisationDetailTestCase(TestCase):
         self.assertJSONEqual(response.content, expected_response_content)
 
     def test_get_with_distance_greater_than_0(self):
+        """
+        The distance is between the two gps coordinates
+        -33.891937,18.505496 and -33.891937,17.505496
+        is 111.19 KM or 69.09 Miles or 60.04 Nautical miles or 111194.26 meters
+        https://gps-coordinates.org/distance-between-coordinates.php
+        """
         url = '/api/organisation/{0}/'.format(self.org.id)
         location = '?location=-33.891937,17.505496'
         response = self.client.get(
