@@ -1,4 +1,5 @@
 import logging
+from geopy.distance import distance as geo_distance
 from collections import OrderedDict
 from django.contrib.gis.measure import D
 from django.contrib.gis.geos import Point
@@ -10,7 +11,7 @@ from rest_framework import serializers
 class PointField(serializers.CharField):
 
     def to_representation(self, obj):
-        return '{} {}'.format(obj.get_x(), obj.get_y())
+        return '{},{}'.format(obj.get_x(), obj.get_y())
 
     def to_internal_value(self, data):
         lat, lng = data.split(',')
@@ -169,8 +170,12 @@ class OrganisationSerializer(serializers.ModelSerializer):
             try:
                 lat = float(str(location[0]))
                 lng = float(str(location[1]))
-                return str('{0:.2f}km'.format(
-                    instance.location.distance(Point(lng, lat, srid=4326)))
+
+                return '{0:.2f}km'.format(
+                    geo_distance(
+                        (lng, lat),
+                        (instance.location.get_x(), instance.location.get_y())
+                    ).km
                 )
             except (ValueError, TypeError):
                 pass
