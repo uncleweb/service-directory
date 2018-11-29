@@ -1,7 +1,5 @@
 FROM praekeltfoundation/django-bootstrap
 
-RUN apt-get-install.sh gettext
-
-ENV DJANGO_SETTINGS_MODULE=service_directory.settings.docker
+ENV DJANGO_SETTINGS_MODULE service_directory.project.docker
 
 CMD ["service_directory.wsgi:application", "--timeout", "1800"]

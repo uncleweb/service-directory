@@ -34,24 +34,16 @@ jobs:
   include:
     - stage: test
     - stage: docker
-      python: "2.7"
+      python: "3.6"
       sudo: required
-      dist: trusty
       services: [docker]
       env:
         - IMAGE_NAME=praekeltfoundation/service_directory
         - REGISTRY_USER=praekeltorgdeploy
         - secure: "BzcGxn8uwE8wZew7ya0OZqQfN08pQxiJHHo4PYc7jwGvLbtJVumNoEAikZitz8JTlAR8pn30NMlW3RELXyJ0kntrE0KSOJcprx1Mm4wEIZ8dmXJpsE4QyFNm5wjFnhtVr/QEmhTK0k6Wzgw1PNZ6P8dGG4+LLxZiH871s29C5t7MYfK/IcOvhtu0j54v9C84omuiWJE1d+8AxlbdQ6B5HJID6T+SsMfcF+V0g3QTU5jiwv/2qrM9g2jB1rtv6ww13whH+wptbxrcg93HmZC7agG2063ryyEy+SWhGWooZhEJYxsidmslaq7BoeL1QRQBE66e9oKjuupaiuPnFyW23HOa4m5W2VN8GDAeUw6aXEJ2n7yLvkWgGPnIhUh76MteK9pBXCNSdOm5gZIv5DkotESzDgGcTLWHDpHtwB28MW8bqiIohSRiz2ckNcGNYAyEBLKxYkYpazkCRmrlhijvQ8Z7W6h11syiLuAUMnr1SC5dPLP8A0yJ5JT5OCPfvMpkHffB0BZbgpDgSdMGHvINIhZS2oQIdU/EwqGRCk3Qe6YS1DjJrB65sRgpue4aSO+c/PblcXT1H7ACi7wTM9bQr/TobhOtHyhiS7IxIX54/CRcEcnPM27V/76XFJNIcDjUBl3l8fP+c6G0KO4SId8n5J7ts/gDA84J7RBJ+EvS+BM="
 
-      # Update Docker: we want some new docker build features
-      install:
-        - sudo apt-get update
-        - sudo apt-get install -y -o Dpkg::Options::="--force-confold" docker-ce
-
-      before_script:
-        - docker pull "$IMAGE_NAME" || true
       script:
-        - docker build --pull --tag "$IMAGE_NAME" 
+        - docker build --tag "$IMAGE_NAME"
 
       before_deploy:
         - pip install docker-ci-deploy==0.3.0
@@ -61,10 +53,6 @@ jobs:
           script: dcd --version "$(git rev-parse --short HEAD)" --version-latest "$IMAGE_NAME"
           on:
             branch: develop
-        - provider: script
-          script: dcd --tag "$TRAVIS_TAG" -- "$IMAGE_NAME"
-          on:
-            tags: true
 
       # Built steps inherited from the default stage that we don't want
       before_install: ignore
