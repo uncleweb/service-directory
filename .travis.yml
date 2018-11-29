@@ -36,7 +36,7 @@ jobs:
       sudo: required
       services: [docker]
       env:
-        - IMAGE_NAME=praekeltfoundation/service_directory
+        - IMAGE_NAME=praekeltfoundation/service-directory
         - REGISTRY_USER=praekeltorgdeploy
         - secure: "plTU4J43/SUQ5Oh+Q/fXuUPR+iruZqogRDLO2wVsuBrEr3aszW6Re+Zogef69KthWixdmTMzJPN17ukBbCmYur7wpqVh90onfEwz9fKKDfLM+I/amUdxn0qUaweV36EwRO0E+5UTLbwQvzjI+LOeIdyIdaq6G+BYqDMwdB0XsQGGDGaG0LrsmQzmLhTG4RVS/C6IkipK9wSY1Jx7Kw4UQM3bcKbLlMsu6/Wcv2i3diSCW1BIGj1mb5sluGjlG/8MwP0QYHrtxJ/X5uC8KuPO873PWcmCY/b/QEaO5fy9CW+88CDIVlLkPARtl5SZjYHM+6Bkse91Zpntjo4i+icPiK2Fhh7+pUs0z9jaBvDW0Rv64Lgap469ZBC5O5p6yvaB1S+jDVCtibIeLLo+I/3Ho0MG/BfD5mu+W8bhSX0XdqeIgYfLfvImSLVJV5zhcr7OAQHQyeYQlG42UTkVAasqONQc7WcjfEeyivL+JDjQtc+1ltKlT3GflnkwXa8oH3GKNcJxZXu3OMc8V8FoQweX27KY8tX63PNCx6N8DBOlG9dwBAM48EI/sQY4QnjajlL0/SFCEhQXN0TgYvupr9EPugdzwfkvAvVdyXAvjgywlLiIMGjnyJJYSFR+qOVb5W5VdOiTub+m4ybdiKxouoGRrHnmlgi04tTiMAi2r40JIMg="
 
