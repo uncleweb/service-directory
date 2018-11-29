@@ -2,55 +2,58 @@ sudo: false
 language: python
 python:
   - "2.7"
-
 cache:
-  directories:
-    - $HOME/.pip-cache/
-
-env:
-  - TZ=UTC
-
-sudo: required
-
-# https://docs.travis-ci.com/user/database-setup/#ElasticSearch
-services:
-  - postgresql
-
-addons:
-  postgresql: "9.6"
-
-
+  - pip
+before_install:
+  - pip install --upgrade pip
 install:
   - pip install coveralls
-  - pip install wheel
   - pip install -r requirements.txt
   - pip install -r requirements-dev.txt
   - pip install -e .
-
 before_script:
   - mkdir /tmp/elasticsearch
   - wget -O - https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-1.5.0.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1
   - /tmp/elasticsearch/bin/elasticsearch &>/dev/null &
-  - sudo apt-get install postgresql-9.6-postgis-2.4 -y -q
   - sleep 10  # ElasticSearch may take a few seconds to start and may not be available when the script is executed.
-
 script:
   - flake8
   - py.test --cov=service_directory --cov-report=term
-
 after_success:
   - coveralls
 
-deploy:
-  provider: pypi
-  distributions: sdist bdist_wheel
-  user: Praekelt
-  password:
-    secure: "BzcGxn8uwE8wZew7ya0OZqQfN08pQxiJHHo4PYc7jwGvLbtJVumNoEAikZitz8JTlAR8pn30NMlW3RELXyJ0kntrE0KSOJcprx1Mm4wEIZ8dmXJpsE4QyFNm5wjFnhtVr/QEmhTK0k6Wzgw1PNZ6P8dGG4+LLxZiH871s29C5t7MYfK/IcOvhtu0j54v9C84omuiWJE1d+8AxlbdQ6B5HJID6T+SsMfcF+V0g3QTU5jiwv/2qrM9g2jB1rtv6ww13whH+wptbxrcg93HmZC7agG2063ryyEy+SWhGWooZhEJYxsidmslaq7BoeL1QRQBE66e9oKjuupaiuPnFyW23HOa4m5W2VN8GDAeUw6aXEJ2n7yLvkWgGPnIhUh76MteK9pBXCNSdOm5gZIv5DkotESzDgGcTLWHDpHtwB28MW8bqiIohSRiz2ckNcGNYAyEBLKxYkYpazkCRmrlhijvQ8Z7W6h11syiLuAUMnr1SC5dPLP8A0yJ5JT5OCPfvMpkHffB0BZbgpDgSdMGHvINIhZS2oQIdU/EwqGRCk3Qe6YS1DjJrB65sRgpue4aSO+c/PblcXT1H7ACi7wTM9bQr/TobhOtHyhiS7IxIX54/CRcEcnPM27V/76XFJNIcDjUBl3l8fP+c6G0KO4SId8n5J7ts/gDA84J7RBJ+EvS+BM="
-  on:
-    tags: true
-    all_branches: true
+addons:
+  postgresql: 9.6
+  apt:
+    packages:
+    - postgresql-9.6-postgis-2.3
 
-notifications:
-  slack: praekeltfoundation:mgvd7PsJynKvMoximpSmuusw
+jobs:
+  include:
+    - stage: test
+    - stage: docker
+      python: "2.7"
+      sudo: required
+      services: [docker]
+      env:
+        - IMAGE_NAME=praekeltfoundation/service_directory
+        - REGISTRY_USER=praekeltorgdeploy
+        - secure: "BzcGxn8uwE8wZew7ya0OZqQfN08pQxiJHHo4PYc7jwGvLbtJVumNoEAikZitz8JTlAR8pn30NMlW3RELXyJ0kntrE0KSOJcprx1Mm4wEIZ8dmXJpsE4QyFNm5wjFnhtVr/QEmhTK0k6Wzgw1PNZ6P8dGG4+LLxZiH871s29C5t7MYfK/IcOvhtu0j54v9C84omuiWJE1d+8AxlbdQ6B5HJID6T+SsMfcF+V0g3QTU5jiwv/2qrM9g2jB1rtv6ww13whH+wptbxrcg93HmZC7agG2063ryyEy+SWhGWooZhEJYxsidmslaq7BoeL1QRQBE66e9oKjuupaiuPnFyW23HOa4m5W2VN8GDAeUw6aXEJ2n7yLvkWgGPnIhUh76MteK9pBXCNSdOm5gZIv5DkotESzDgGcTLWHDpHtwB28MW8bqiIohSRiz2ckNcGNYAyEBLKxYkYpazkCRmrlhijvQ8Z7W6h11syiLuAUMnr1SC5dPLP8A0yJ5JT5OCPfvMpkHffB0BZbgpDgSdMGHvINIhZS2oQIdU/EwqGRCk3Qe6YS1DjJrB65sRgpue4aSO+c/PblcXT1H7ACi7wTM9bQr/TobhOtHyhiS7IxIX54/CRcEcnPM27V/76XFJNIcDjUBl3l8fP+c6G0KO4SId8n5J7ts/gDA84J7RBJ+EvS+BM="
 
+      script:
+        - docker build --tag "$IMAGE_NAME" .
+
+      before_deploy:
+        - pip install docker-ci-deploy==0.3.0
+        - echo -n $REGISTRY_PASS | docker login -u "$REGISTRY_USER" --password-stdin
+      deploy:
+        - provider: script
+          script: dcd --version "$(git rev-parse --short HEAD)" --version-latest "$IMAGE_NAME"
+          on:
+            branch: develop
+
+      # Built steps inherited from the default stage that we don't want
+      before_install: []
+      before_script: []
+      install: []
+      after_success: []
