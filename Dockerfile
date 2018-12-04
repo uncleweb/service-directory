@@ -8,4 +8,4 @@ RUN apt-get update && apt-get -y --force-yes install binutils libproj-dev gdal-b
 COPY . /app
 RUN pip install -e .
 
-CMD ["service_directory.wsgi:application", "--timeout", "1800"]
+CMD ["service_directory.project.wsgi:application", "--timeout", "1800"]
