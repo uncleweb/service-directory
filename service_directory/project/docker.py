@@ -17,7 +17,7 @@ SECRET_KEY = environ.get('SECRET_KEY', 'please-change-me')
 RAVEN_DSN = environ.get('RAVEN_DSN')
 RAVEN_CONFIG = {'dsn': RAVEN_DSN} if RAVEN_DSN else {}
 
-STATIC_ROOT = '/deploy/static'
+STATIC_ROOT = '/app/static'
 
 DATABASES = {
     'default': dj_database_url.config()
