@@ -100,7 +100,8 @@ class Organisation(models.Model):
 
     @property
     def location_coords(self):
-        return '{0}, {1}'.format(self.location.y, self.location.x)
+        if self.location:
+            return '{0}, {1}'.format(self.location.y, self.location.x)
 
     def formatted_categories(self):
         categories = [
