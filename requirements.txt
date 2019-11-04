@@ -2,7 +2,7 @@ gunicorn
 dj-database-url
 
 Django==1.8.8
-djangorestframework==3.3.2
+djangorestframework==3.9.1
 django-rest-swagger==0.3.4
 django-import-export==0.4.2
 psycopg2-binary>=2.7.3
